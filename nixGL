@@ -6,7 +6,7 @@ import subprocess
 # Any rpath with this pattern is ignored
 # TODO: perhaps libOpenGL.so in nix exists in other packages, we
 # should extend this list
-ignored = [b'mesa-noglu']
+ignored = [b'mesa-noglu', b'mesa']
 
 # These are the list of system library which are added
 # TODO: extend this list for other systems
