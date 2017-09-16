@@ -8,7 +8,7 @@ rec {
      name = "nixGL-${version}";
      version = "1.0.0";
 
-     buildInputs = [ pkgs.python3 pkgs.which pkgs.patchelf ];
+     buildInputs = [ pkgs.python3 pkgs.which pkgs.binutils ];
      outputs = [ "out" ];
 
      src = ./.;

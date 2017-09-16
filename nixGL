@@ -16,18 +16,19 @@ systemLibs = [b"/usr/lib", b"/lib"]
 cmd = (prog, *args) = sys.argv[1:]
 realProg = subprocess.check_output(["which", prog]).strip()
 
-# extract rpath of the program
-rpaths = map(bytes.strip, subprocess.check_output(
-    ['patchelf', '--print-rpath', realProg]).split(b':'))
+# extract libs deps of the program
+paths = []
+for line in subprocess.check_output(['ldd', realProg]).split(b'\n'):
+    line = line.split()
+    if len(line) == 4:
+        lib = line[2]
+        path = os.path.dirname(lib)
 
-# filter rpath, removing ignored and empty paths
-dir = []
-
-for i in rpaths:
-    for c in ignored:
-        if c not in i:
-            if i.strip():
-                dir.append(i.strip())
+        for c in ignored:
+            if c in path:
+                break
+        else:
+            paths.append(path)
 
 # build the new environment
 newenv = os.environb
@@ -42,7 +43,8 @@ oldLdLibraryPath = newenv.get(b'LD_LIBRARY_PATH', b'').split()
 # This ensure three properties:
 # a) system library (and libOpenGL.so) are used AFTER the one of nix
 # b) the executible respect the LD_LIBRARY_PATH for an user viewpoint
-newLibraryPath = oldLdLibraryPath + dir + systemLibs
+newLibraryPath = b':'.join(oldLdLibraryPath + paths + systemLibs)
 
-newenv.update({b'LD_LIBRARY_PATH': b':'.join(newLibraryPath)})
+newenv.update({b'LD_LIBRARY_PATH': newLibraryPath})
+
 os.execvpe(prog, cmd, newenv)

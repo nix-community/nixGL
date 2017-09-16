@@ -46,13 +46,27 @@ nixGL program args
 
 # Limitations
 
-The idea is really simple and should work reliably. However there is still two configurations variables hardcoded in the wrapper. Open a bug / pull request if this does not work on your distribution / driver.
+The idea is really simple and should work reliably in most cases.
 
-## Library paths
+However there is still two configurations variables hardcoded in the wrapper.
 
-The path of where the `libGL.so` library can be found on your system, usually `/usr/lib`.
+- `ignored`: the list of all nix packages which may contain a wrong `libGL.so`.
+- `systemLibs`: the list of where on the host system the `libGL.so` can be found.
 
-## Name of the Nix package which contains `libGL.so`
+Open a bug / pull request if this does not work on your distribution / driver.
 
-This package will be ignored by the wrapper. It is currently hardcoded as `mesa-noglu` but this can be fixed.
+It works with `primus`, but there is some artifacts.
 
+## Fundamental issue
+
+If your program libraries depends on different version of the same library, for example, this dependency tree:
+
+```
+program
+   libFoo-1.2
+      libBar-1.4
+   libTurtle-1.6
+      libBar-1.2
+```
+
+One version or the other of `libBar` may be used. In practice this does not happen a lot.
