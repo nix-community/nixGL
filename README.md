@@ -55,11 +55,11 @@ However there is still two configurations variables hardcoded in the wrapper.
 
 Open a bug / pull request if this does not work on your distribution / driver.
 
-It works with `primus`, but there is some artifacts.
+It works with `primus`, but there is some artifacts, mostly due to the next fundamental issue:
 
 ## Fundamental issue
 
-If your program libraries depends on different version of the same library, for example, this dependency tree:
+If your program libraries depends on different versions of the same library, for example, this dependency tree:
 
 ```
 program
@@ -70,3 +70,13 @@ program
 ```
 
 One version or the other of `libBar` may be used. In practice this does not happen a lot.
+
+A similar issue will happen if your system `libGL.so` depends on some library which are already in your program dependency list. Undefined behaviors can happen.
+
+## Subprocessus
+
+It does not work with subprocessus, that's all ;(
+
+## Haskell Stack `exec`
+
+You need to call `stack --nix exec -- nixGL yourProgram` instead of `nixGL stack exec -- yourProgram` du to the incompatibility with subprocessus. If `nixGL` is not installed in your stack environment, you can use `stack --nix --no-nix-pure exec ...`.
