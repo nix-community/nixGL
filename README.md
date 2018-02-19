@@ -28,21 +28,52 @@ Clone this git repository:
 
 ```
 git clone https://github.com/guibou/nixGL
-```
-
-Build / install
-
-```
 cd nixGL
-nix-build -A XXX
+```
+
+## Optional (if NVIDIA) Grab your NVIDIA driver version
+
+Using `glxinfo` from your host system, grab the driver version, here `390.25`:
+
+```
+$ glxinfo | grep NVIDIA
+...
+OpenGL core profile version string: 4.5.0 NVIDIA 390.25
+...
+```
+
+## Build
+
+For intel:
+
+```
+nix-build -A nixGLIntel
+```
+
+For NVIDIA alone:
+
+```
+nix-build -A nixGLNvidia --argstr nvidiaVersion 390.25
+```
+
+(replace `390.25` with the host driver version gathered earlier.)
+
+For Nvidia with bumblebee:
+
+```
+nix-build -A nixGLNvidiaBumblebee --argstr nvidiaVersion 390.25
+```
+
+(replace `390.25` with the host driver version gathered earlier.)
+
+## Install
+
+```
 nix-env -i ./result
 ```
 
-XXX can be one of:
+(Note, you can iterate many time on this process to install as many driver as needed. Common example are `nixGLIntel` with `nixGLNvidiaBumblebee`)
 
-- `nixGLNvidia`: Nvidia driver without bumblebee
-- `nixGLNvidiaBumblebee`: Nvidia driver with bumblebee
-- `nixGLIntel`: Intel driver
 
 # Usage
 
@@ -61,15 +92,4 @@ OpenGL version string: 4.6.0 NVIDIA 390.25
 
 # Limitations
 
-The idea is really simple and should work reliably in most cases. It
-can be easily extended to AMD drivers, I just don't have the hardware
-to test. Contact me.
-
-*Important*: You need an host system driver which match the nixpkgs one. For example, at the time of this writing, nixpkgs contains nvidia `390.25`. Your host system must contain the same version. This limitation can be lifted by using a different version of nixpkgs:
-
-```shell
-export NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixos-14.12.tar.gz
-nix-build -A nixGLNvidia
-```
-
-Contact me if this limitation is too important, it may be easy to automate this process.
+Does not work now for AMD drivers because I dont' have the hardware.
