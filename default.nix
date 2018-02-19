@@ -1,4 +1,6 @@
-{ system ? builtins.currentSystem }:
+{ system ? builtins.currentSystem,
+  nvidiaVersion ? null
+}:
 
 let
   pkgs = import <nixpkgs> { inherit system; };
@@ -7,10 +9,16 @@ let
 in
 with pkgs;
 rec {
-  nvidiaLibsOnly = linuxPackages.nvidia_x11.override {
+  nvidiaLibsOnly = (linuxPackages.nvidia_x11.override {
     libsOnly = true;
     kernel = null;
-  };
+  }).overrideAttrs(oldAttrs: rec {
+    name = "nvidia-${nvidiaVersion}";
+    src = fetchurl {
+      url = "http://download.nvidia.com/XFree86/Linux-x86_64/${nvidiaVersion}/NVIDIA-Linux-x86_64-${nvidiaVersion}.run";
+      sha256 = null;
+    };
+  });
 
   nixGLNvidiaBumblebee = runCommand "nixGLNvidiaBumblebee-${version}" {
     buildInputs = [ libglvnd nvidiaLibsOnly bumblebee ];
