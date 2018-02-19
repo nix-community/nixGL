@@ -1,4 +1,4 @@
-This tool tries to solve the "OpenGL" problem on nix.
+This tool tries to solve the "OpenGL" problem on nix. Works with Nvidia cards (with bumblebee) and intel cards.
 
 # Quick start
 
