@@ -40,9 +40,9 @@ nix-env -i ./result
 
 XXX can be one of:
 
-- `nixGLNvidia`: Nvidia driver without bumblebee (should work, but done from memory: please open a bug report if any issue)
-- `nixGLNvidiaBumblebee`: Nvidia driver with bumblebee (tested)
-- `nixGLIntel`: Intel driver (tested)
+- `nixGLNvidia`: Nvidia driver without bumblebee
+- `nixGLNvidiaBumblebee`: Nvidia driver with bumblebee
+- `nixGLIntel`: Intel driver
 
 # Usage
 
