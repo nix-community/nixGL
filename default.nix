@@ -18,10 +18,11 @@ rec {
       url = "http://download.nvidia.com/XFree86/Linux-x86_64/${nvidiaVersion}/NVIDIA-Linux-x86_64-${nvidiaVersion}.run";
       sha256 = null;
     };
+    useGLVND = 0;
   });
 
   nixGLNvidiaBumblebee = runCommand "nixGLNvidiaBumblebee-${version}" {
-    buildInputs = [ libglvnd nvidiaLibsOnly bumblebee ];
+    buildInputs = [ nvidiaLibsOnly bumblebee ];
 
      meta = with pkgs.stdenv.lib; {
          description = "A tool to launch OpenGL application on system other than NixOS - Nvidia bumblebee version";
@@ -32,14 +33,14 @@ rec {
       cat > $out/bin/nixGLNvidiaBumblebee << FOO
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib
-      ${bumblebee}/bin/optirun --ldpath ${libglvnd}/lib "\$@"
+      ${bumblebee}/bin/optirun "\$@"
       FOO
 
       chmod u+x $out/bin/nixGLNvidiaBumblebee
       '';
 
   nixGLNvidia = runCommand "nixGLNvidia-${version}" {
-    buildInputs = [ libglvnd nvidiaLibsOnly ];
+    buildInputs = [ nvidiaLibsOnly ];
 
      meta = with pkgs.stdenv.lib; {
          description = "A tool to launch OpenGL application on system other than NixOS - Nvidia version";
@@ -49,7 +50,7 @@ rec {
       mkdir -p $out/bin
       cat > $out/bin/nixGLNvidia << FOO
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib:${libglvnd}/lib
+      export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib
       "\$@"
       FOO
 
