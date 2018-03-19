@@ -1,5 +1,7 @@
 { system ? builtins.currentSystem,
-  nvidiaVersion ? null
+  nvidiaVersion ? null,
+  atiUrl ? null,
+  atiVersion ? null
 }:
 
 let
@@ -19,6 +21,18 @@ rec {
       sha256 = null;
     };
     useGLVND = 0;
+  });
+
+  ati = (linuxPackages.ati_drivers_x11.override {
+    libsOnly = true;
+    kernel = null;
+  }).overrideAttrs(oldAttrs : rec {
+    name = "ati_drivers-${atiVersion}";
+    src = fetchurl {
+      url = atiUrl;
+      sha256 = null;
+      curlOpts = "--referer http://support.amd.com/en-us/download/desktop?os=Linux+x86_64";
+    };
   });
 
   nixGLNvidiaBumblebee = runCommand "nixGLNvidiaBumblebee-${version}" {
@@ -73,5 +87,23 @@ rec {
       FOO
 
       chmod u+x $out/bin/nixGLIntel
+      '';
+
+  nixGLAti = runCommand "nixGLAti-${version}" {
+    buildInputs = [ mesa_drivers ];
+
+     meta = with pkgs.stdenv.lib; {
+         description = "A tool to launch OpenGL application on system other than NixOS - Ati version";
+         homepage = "https://github.com/guibou/nixGL";
+     };
+    } ''
+      mkdir -p $out/bin
+      cat > $out/bin/nixGLAti << FOO
+      #!/usr/bin/env sh
+      export LD_LIBRARY_PATH=${ati}/lib
+      "\$@"
+      FOO
+
+      chmod u+x $out/bin/nixGLAti
       '';
 }

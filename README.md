@@ -83,6 +83,14 @@ nix-build -A nixGLNvidiaBumblebee --argstr nvidiaVersion 390.25
 
 (replace `390.25` with the host driver version gathered earlier.)
 
+For Ati (untested):
+
+```
+nix-build ./default.nix -A nixGLAti --argstr atiUrl "https://www2.ati.com/drivers/linux/radeon-crimson-15.12-15.302-151217a-297685e.zip" --argstr atiVersion "15.12"
+```
+
+(replace the url and the version with the correct ones. At the time of this writting, I have no idea on how we can detect that, ati seems to have a weird file naming convention).
+
 ## Install
 
 ```
