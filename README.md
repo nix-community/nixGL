@@ -1,4 +1,4 @@
-This tool tries to solve the "OpenGL" problem on nix. Works with Nvidia cards (with bumblebee) and intel cards.
+This tool tries to solve the "OpenGL" problem on nix. Works with Nvidia cards (with bumblebee) and Intel cards. It works for Vulkan programs too.
 
 # Quick start
 
@@ -33,10 +33,11 @@ libGL error: unable to load driver: swrast_dri.so
 libGL error: failed to load driver: swrast
 ```
 
-This library contains a wrapper which is able to launch GL application:
+This library contains a wrapper which is able to launch GL or Vulkan applications:
 
 ```
 nixGLXXX program
+nixVulkanXXX program
 ```
 
 # Installation / Usage
@@ -61,16 +62,30 @@ OpenGL core profile version string: 4.5.0 NVIDIA 390.25
 
 ## Build
 
-For intel:
+For Intel GL:
 
 ```
 nix-build -A nixGLIntel
 ```
 
-For NVIDIA alone:
+For Intel Vulkan:
+
+```
+nix-build -A nixVulkanIntel
+```
+
+For NVIDIA GL alone:
 
 ```
 nix-build -A nixGLNvidia --argstr nvidiaVersion 390.25
+```
+
+For NVIDIA Vulkan alone:
+
+Note that the NVIDIA GL and Vulkan wrappers are identical aside from the name
+
+```
+nix-build -A nixVulkanNvidia --argstr nvidiaVersion 390.25
 ```
 
 (replace `390.25` with the host driver version gathered earlier.)
@@ -94,8 +109,16 @@ nix-env -i ./result
 
 # Usage
 
+For GL programs
+
 ```
 nixGLXXX program args
+```
+
+For Vulkan programs
+
+```
+nixVulkanXXX program args
 ```
 
 For example (on my dual GPU laptop):
@@ -105,6 +128,21 @@ $ nixGLIntel glxinfo | grep -i 'OpenGL version string'
 OpenGL version string: 3.0 Mesa 17.3.3
 $ nixGLNvidiaBumblebee glxinfo | grep -i 'OpenGL version string'
 OpenGL version string: 4.6.0 NVIDIA 390.25
+```
+
+Another example (on an XPS 9560 with the Intel GPU selected):
+
+```bash
+$ nixVulkanIntel $(nix-build '<nixpkgs>' --no-out-link -A vulkan-loader)/bin/vulkaninfo | grep VkPhysicalDeviceProperties -A 7
+VkPhysicalDeviceProperties:
+===========================
+        apiVersion     = 0x400036  (1.0.54)
+        driverVersion  = 71311368 (0x4402008)
+        vendorID       = 0x8086
+        deviceID       = 0x591b
+        deviceType     = INTEGRATED_GPU
+        deviceName     = Intel(R) HD Graphics 630 (Kaby Lake GT2)
+
 ```
 
 # Limitations
