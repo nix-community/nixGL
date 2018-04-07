@@ -74,4 +74,27 @@ rec {
 
       chmod u+x $out/bin/nixGLIntel
       '';
+
+  nixVulkanIntel = writeTextFile rec {
+    name = "nixVulkanIntel-${version}";
+    executable = true;
+    destination = "/bin/nixVulkanIntel";
+    checkPhase = ''${shellcheck}/bin/shellcheck "$out/bin/nixVulkanIntel"'';
+    text = ''
+      #!/usr/bin/env bash
+      if [ ! -z "$LD_LIBRARY_PATH" ]; then
+        echo "Warning, ${name} overwriting existing LD_LIBRARY_PATH" 1>&2
+      fi
+      export LD_LIBRARY_PATH=${lib.makeLibraryPath [
+        zlib
+        libdrm
+        xorg.libX11
+        xorg.libxcb
+        xorg.libxshmfence
+        wayland
+        gcc.cc
+      ]}
+      exec "$@"
+    '';
+  };
 }
