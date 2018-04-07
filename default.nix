@@ -39,16 +39,16 @@ rec {
       chmod u+x $out/bin/nixGLNvidiaBumblebee
       '';
 
-  nixGLNvidia = runCommand "nixGLNvidia-${version}" {
+  nixNvidiaWrapper = api: runCommand "nix${api}Nvidia-${version}" {
     buildInputs = [ nvidiaLibsOnly ];
 
      meta = with pkgs.stdenv.lib; {
-         description = "A tool to launch OpenGL application on system other than NixOS - Nvidia version";
+         description = "A tool to launch ${api} application on system other than NixOS - Nvidia version";
          homepage = "https://github.com/guibou/nixGL";
      };
     } ''
       mkdir -p $out/bin
-      cat > $out/bin/nixGLNvidia << FOO
+      cat > $out/bin/nix${api}Nvidia << FOO
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib
       "\$@"
@@ -57,23 +57,9 @@ rec {
       chmod u+x $out/bin/nixGLNvidia
       '';
 
-  nixVulkanNvidia = runCommand "nixVulkanNvidia-${version}" {
-    buildInputs = [ nvidiaLibsOnly ];
+  nixGLNvidia = nixNvidiaWrapper "GL";
 
-     meta = with pkgs.stdenv.lib; {
-         description = "A tool to launch Vulkan application on system other than NixOS - Nvidia version";
-         homepage = "https://github.com/guibou/nixGL";
-     };
-    } ''
-      mkdir -p $out/bin
-      cat > $out/bin/nixVulkanNvidia << FOO
-      #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib
-      "\$@"
-      FOO
-
-      chmod u+x $out/bin/nixVulkanNvidia
-      '';
+  nixVulkanNvidia = nixNvidiaWrapper "Vulkan";
 
   nixGLIntel = runCommand "nixGLIntel-${version}" {
     buildInputs = [ mesa_drivers ];
