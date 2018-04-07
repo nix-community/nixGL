@@ -144,7 +144,6 @@ VkPhysicalDeviceProperties:
         deviceID       = 0x591b
         deviceType     = INTEGRATED_GPU
         deviceName     = Intel(R) HD Graphics 630 (Kaby Lake GT2)
-
 ```
 
 # Limitations
