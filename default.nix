@@ -57,6 +57,24 @@ rec {
       chmod u+x $out/bin/nixGLNvidia
       '';
 
+  nixVulkanNvidia = runCommand "nixVulkanNvidia-${version}" {
+    buildInputs = [ nvidiaLibsOnly ];
+
+     meta = with pkgs.stdenv.lib; {
+         description = "A tool to launch Vulkan application on system other than NixOS - Nvidia version";
+         homepage = "https://github.com/guibou/nixGL";
+     };
+    } ''
+      mkdir -p $out/bin
+      cat > $out/bin/nixVulkanNvidia << FOO
+      #!/usr/bin/env sh
+      export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib
+      "\$@"
+      FOO
+
+      chmod u+x $out/bin/nixVulkanNvidia
+      '';
+
   nixGLIntel = runCommand "nixGLIntel-${version}" {
     buildInputs = [ mesa_drivers ];
 
