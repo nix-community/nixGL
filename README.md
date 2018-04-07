@@ -133,6 +133,8 @@ OpenGL version string: 4.6.0 NVIDIA 390.25
 Another example (on an XPS 9560 with the Intel GPU selected):
 
 ```bash
+$ sudo apt install mesa-vulkan-drivers
+...
 $ nixVulkanIntel $(nix-build '<nixpkgs>' --no-out-link -A vulkan-loader)/bin/vulkaninfo | grep VkPhysicalDeviceProperties -A 7
 VkPhysicalDeviceProperties:
 ===========================
