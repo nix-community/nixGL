@@ -75,26 +75,30 @@ rec {
       chmod u+x $out/bin/nixGLIntel
       '';
 
-  nixVulkanIntel = writeTextFile rec {
-    name = "nixVulkanIntel-${version}";
-    executable = true;
-    destination = "/bin/nixVulkanIntel";
-    checkPhase = ''${shellcheck}/bin/shellcheck "$out/bin/nixVulkanIntel"'';
-    text = ''
-      #!/usr/bin/env bash
-      if [ ! -z "$LD_LIBRARY_PATH" ]; then
-        echo "Warning, ${name} overwriting existing LD_LIBRARY_PATH" 1>&2
-      fi
-      export LD_LIBRARY_PATH=${lib.makeLibraryPath [
-        zlib
-        libdrm
-        xorg.libX11
-        xorg.libxcb
-        xorg.libxshmfence
-        wayland
-        gcc.cc
-      ]}
-      exec "$@"
+  nixVulkanIntel = runCommand "nixVulkanIntel-${version}" {
+     meta = with pkgs.stdenv.lib; {
+         description = "A tool to launch Vulkan application on system other than NixOS - Intel version";
+         homepage = "https://github.com/guibou/nixGL";
+     };
+   } ''
+     mkdir -p "$out/bin"
+     cat > "$out/bin/nixVulkanIntel" << EOF
+     #!/usr/bin/env bash
+     if [ ! -z "$LD_LIBRARY_PATH" ]; then
+       echo "Warning, nixVulkanIntel overwriting existing LD_LIBRARY_PATH" 1>&2
+     fi
+     export LD_LIBRARY_PATH=${lib.makeLibraryPath [
+       zlib
+       libdrm
+       xorg.libX11
+       xorg.libxcb
+       xorg.libxshmfence
+       wayland
+       gcc.cc
+     ]}
+     exec "\$@"
+     EOF
+     chmod u+x "$out/bin/nixVulkanIntel"
+     ${shellcheck}/bin/shellcheck "$out/bin/nixVulkanIntel"
     '';
-  };
 }
