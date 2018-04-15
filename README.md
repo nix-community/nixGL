@@ -1,4 +1,4 @@
-This tool tries to solve the "OpenGL" problem on nix. Works with Nvidia cards (with bumblebee) and Intel cards. It works for Vulkan programs too.
+This tool tries to solve the "OpenGL" problem on nix. Works with Nvidia cards (with bumblebee) and most of the card supported by mesa (such as Intel, AMD and nouveau using the free driver). It works for Vulkan programs too.
 
 # Quick start
 
@@ -62,7 +62,7 @@ OpenGL core profile version string: 4.5.0 NVIDIA 390.25
 
 ## Build
 
-For Intel GL:
+For mesa (intel, amd, nouveau) GL, the package is historically called `nixGLIntel`:
 
 ```
 nix-build -A nixGLIntel
