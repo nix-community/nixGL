@@ -54,7 +54,7 @@ rec {
       "\$@"
       FOO
 
-      chmod u+x $out/bin/nixGLNvidia
+      chmod u+x $out/bin/nix${api}Nvidia
       '';
 
   nixGLNvidia = nixNvidiaWrapper "GL";
