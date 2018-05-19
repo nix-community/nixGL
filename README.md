@@ -10,7 +10,9 @@ git clone https://github.com/guibou/nixGL
 cd nixGL
 
 # build and install the wrapper
-nix-build -A nixGLNvidia --argstr nvidiaVersion 390.25
+./nvidiaInstall.py 390.25 nixGLNvidia
+
+# install the wrapper
 nix-env -i ./result
 
 # use it with any OpenGL application
@@ -62,6 +64,8 @@ OpenGL core profile version string: 4.5.0 NVIDIA 390.25
 
 ## Build
 
+### For mesa (intel, amd, nouveau, ...)
+
 For mesa (intel, amd, nouveau) GL, the package is historically called `nixGLIntel`:
 
 ```
@@ -74,10 +78,14 @@ For Intel Vulkan:
 nix-build -A nixVulkanIntel
 ```
 
+### For nvidia
+
+Due to some restriction on `nix` 2.0, the `nix-build` must be called with a wrapper script.
+
 For NVIDIA GL alone:
 
 ```
-nix-build -A nixGLNvidia --argstr nvidiaVersion 390.25
+./nvidiaInstall.py 390.25 nixGLNvidia
 ```
 
 For NVIDIA Vulkan alone:
@@ -85,7 +93,7 @@ For NVIDIA Vulkan alone:
 Note that the NVIDIA GL and Vulkan wrappers are identical aside from the name
 
 ```
-nix-build -A nixVulkanNvidia --argstr nvidiaVersion 390.25
+./nvidiaInstall.py 390.25 nixVulkanNvidia
 ```
 
 (replace `390.25` with the host driver version gathered earlier.)
@@ -93,12 +101,14 @@ nix-build -A nixVulkanNvidia --argstr nvidiaVersion 390.25
 For Nvidia with bumblebee:
 
 ```
-nix-build -A nixGLNvidiaBumblebee --argstr nvidiaVersion 390.25
+./nvidiaInstall.py 390.25 nixGLNvidiaBumblebee
 ```
 
 (replace `390.25` with the host driver version gathered earlier.)
 
 ## Install
+
+The previous commands only build the wrapper, now stored inside `./result`, you need to install it:
 
 ```
 nix-env -i ./result

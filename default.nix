@@ -1,5 +1,6 @@
 { system ? builtins.currentSystem,
-  nvidiaVersion ? null
+  nvidiaVersion ? null,
+  nvidiaHash ? null
 }:
 
 let
@@ -16,7 +17,7 @@ rec {
     name = "nvidia-${nvidiaVersion}";
     src = fetchurl {
       url = "http://download.nvidia.com/XFree86/Linux-x86_64/${nvidiaVersion}/NVIDIA-Linux-x86_64-${nvidiaVersion}.run";
-      sha256 = null;
+      sha256 = nvidiaHash;
     };
     useGLVND = 0;
   });
