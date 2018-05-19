@@ -74,6 +74,7 @@ rec {
       cat > $out/bin/nixGLIntel << FOO
       #!/usr/bin/env sh
       export LIBGL_DRIVERS_PATH=${mesa_drivers}/lib/dri
+      export LD_LIBRARY_PATH=${mesa_drivers}/lib
       "\$@"
       FOO
 
