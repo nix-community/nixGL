@@ -172,3 +172,11 @@ provides a similar system with a different approach:
 Both projects are now really similar and the only reason I did not
 contributed to `nix-install-vendor-gl.sh` was because initial `nixGL`
 had a totally different approach.
+
+# Troubleshooting
+
+If by any chance it does not work, you need to install nixGL using the same nixpkgs checkout than the one of your application. For example:
+
+```bash
+NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/94d80eb72474bf8243b841058ce45eac2b163943.tar.gz nix build -f ./default.nix nixGLIntel
+```
