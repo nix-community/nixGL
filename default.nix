@@ -103,4 +103,13 @@ rec {
      chmod u+x "$out/bin/nixVulkanIntel"
      ${shellcheck}/bin/shellcheck "$out/bin/nixVulkanIntel"
     '';
+
+  nixGLCommon = nixGL:
+    runCommand "nixGLCommon" {
+       buildInuts = [nixGL];
+    }
+    ''
+       mkdir -p "$out/bin"
+       cp "${nixGL}/bin/${nixGL.name}" "$out/bin/nixGL";
+    '';
 }
