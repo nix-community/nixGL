@@ -1,6 +1,7 @@
 { system ? builtins.currentSystem,
   nvidiaVersion ? null,
-  nvidiaHash ? null
+  nvidiaHash ? null,
+  pkgs ? import <nixpkgs> { inherit system; }
 }:
 
 with pkgs;
