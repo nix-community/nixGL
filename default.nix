@@ -3,11 +3,6 @@
   nvidiaHash ? null
 }:
 
-let
-  pkgs = import <nixpkgs> { inherit system; };
-
-  version = "1.0.0";
-in
 with pkgs;
 rec {
   nvidiaLibsOnly = (linuxPackages.nvidia_x11.override {
@@ -22,7 +17,7 @@ rec {
     useGLVND = 0;
   });
 
-  nixGLNvidiaBumblebee = runCommand "nixGLNvidiaBumblebee-${version}" {
+  nixGLNvidiaBumblebee = runCommand "nixGLNvidiaBumblebee" {
     buildInputs = [ nvidiaLibsOnly bumblebee ];
 
      meta = with pkgs.stdenv.lib; {
@@ -40,7 +35,7 @@ rec {
       chmod u+x $out/bin/nixGLNvidiaBumblebee
       '';
 
-  nixNvidiaWrapper = api: runCommand "nix${api}Nvidia-${version}" {
+  nixNvidiaWrapper = api: runCommand "nix${api}Nvidia" {
     buildInputs = [ nvidiaLibsOnly ];
 
      meta = with pkgs.stdenv.lib; {
@@ -62,7 +57,7 @@ rec {
 
   nixVulkanNvidia = nixNvidiaWrapper "Vulkan";
 
-  nixGLIntel = runCommand "nixGLIntel-${version}" {
+  nixGLIntel = runCommand "nixGLIntel" {
     buildInputs = [ mesa_drivers ];
 
      meta = with pkgs.stdenv.lib; {
@@ -81,7 +76,7 @@ rec {
       chmod u+x $out/bin/nixGLIntel
       '';
 
-  nixVulkanIntel = runCommand "nixVulkanIntel-${version}" {
+  nixVulkanIntel = runCommand "nixVulkanIntel" {
      meta = with pkgs.stdenv.lib; {
          description = "A tool to launch Vulkan application on system other than NixOS - Intel version";
          homepage = "https://github.com/guibou/nixGL";
