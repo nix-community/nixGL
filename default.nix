@@ -1,25 +1,39 @@
 { system ? builtins.currentSystem,
   nvidiaVersion ? null,
   nvidiaHash ? null,
-  pkgs ? import <nixpkgs> { inherit system; }
+  pkgs ? import <nixpkgs>
 }:
 
-with pkgs;
+let
+  overlay = self: super:
+  {
+     linuxPackages = super.linuxPackages //
+     {
+         nvidia_x11 = (super.linuxPackages.nvidia_x11.override {
+          }).overrideAttrs(oldAttrs: rec {
+            name = "nvidia-${nvidiaVersion}";
+            src = super.fetchurl {
+              url = "http://download.nvidia.com/XFree86/Linux-x86_64/${nvidiaVersion}/NVIDIA-Linux-x86_64-${nvidiaVersion}.run";
+              sha256 = nvidiaHash;
+            };
+            useGLVND = false;
+          });
+     };
+  };
+
+  nixpkgs = pkgs { overlays = [overlay]; };
+in
+with nixpkgs;
 rec {
-  nvidiaLibsOnly = (linuxPackages.nvidia_x11.override {
-    libsOnly = true;
-    kernel = null;
-  }).overrideAttrs(oldAttrs: rec {
-    name = "nvidia-${nvidiaVersion}";
-    src = fetchurl {
-      url = "http://download.nvidia.com/XFree86/Linux-x86_64/${nvidiaVersion}/NVIDIA-Linux-x86_64-${nvidiaVersion}.run";
-      sha256 = nvidiaHash;
-    };
-    useGLVND = 0;
-  });
+  nvidia = linuxPackages.nvidia_x11;
+
+  nvidiaLibsOnly = nvidia.override {
+      libsOnly = true;
+      kernel = null;
+  };
 
   nixGLNvidiaBumblebee = runCommand "nixGLNvidiaBumblebee" {
-    buildInputs = [ nvidiaLibsOnly bumblebee ];
+    buildInputs = [ nvidia bumblebee ];
 
      meta = with pkgs.stdenv.lib; {
          description = "A tool to launch OpenGL application on system other than NixOS - Nvidia bumblebee version";
@@ -29,7 +43,7 @@ rec {
       mkdir -p $out/bin
       cat > $out/bin/nixGLNvidiaBumblebee << FOO
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib
+      export LD_LIBRARY_PATH=${nvidia}/lib
       ${bumblebee}/bin/optirun "\$@"
       FOO
 
