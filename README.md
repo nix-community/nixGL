@@ -181,6 +181,10 @@ If by any chance it does not work, you need to install nixGL using the same nixp
 NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/94d80eb72474bf8243b841058ce45eac2b163943.tar.gz nix build -f ./default.nix nixGLIntel
 ```
 
+# Old nvidia drivers
+
+Users of nvidia legacy driver should use the `backport/noGLVND` branch.
+
 # `nixGLCommon`
 
 `nixGLCommon nixGLXXX` can be used to get `nixGL` executable which fallsback to `nixGLXXX`. It is a shorter name for people with only one OpenGL configuration.
