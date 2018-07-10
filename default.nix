@@ -44,7 +44,7 @@ rec {
       cat > $out/bin/nixGLNvidiaBumblebee << FOO
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${nvidia}/lib
-      ${bumblebee}/bin/optirun "\$@"
+      ${bumblebee}/bin/optirun --ldpath ${nvidia}/lib "\$@"
       FOO
 
       chmod u+x $out/bin/nixGLNvidiaBumblebee
