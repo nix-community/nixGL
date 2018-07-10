@@ -21,7 +21,7 @@ let
      };
   };
 
-  nixpkgs = pkgs { overlays = [overlay]; };
+  nixpkgs = pkgs { overlays = [overlay]; config = {allowUnfree = true;};};
 in
 with nixpkgs;
 rec {
