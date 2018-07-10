@@ -16,7 +16,7 @@ let
               url = "http://download.nvidia.com/XFree86/Linux-x86_64/${nvidiaVersion}/NVIDIA-Linux-x86_64-${nvidiaVersion}.run";
               sha256 = nvidiaHash;
             };
-            useGLVND = false;
+            useGLVND = true;
           });
      };
   };
@@ -44,7 +44,7 @@ rec {
       cat > $out/bin/nixGLNvidiaBumblebee << FOO
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${nvidia}/lib
-      ${bumblebee}/bin/optirun --ldpath ${nvidia}/lib "\$@"
+      ${bumblebee}/bin/optirun --ldpath ${libglvnd}/lib:${nvidia}/lib "\$@"
       FOO
 
       chmod u+x $out/bin/nixGLNvidiaBumblebee
@@ -61,7 +61,7 @@ rec {
       mkdir -p $out/bin
       cat > $out/bin/nix${api}Nvidia << FOO
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${nvidiaLibsOnly}/lib
+      export LD_LIBRARY_PATH=${libglvnd}/lib:${nvidiaLibsOnly}/lib
       "\$@"
       FOO
 
