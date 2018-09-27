@@ -43,7 +43,7 @@ rec {
       mkdir -p $out/bin
       cat > $out/bin/nixGLNvidiaBumblebee << FOO
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${nvidia}/lib
+      export LD_LIBRARY_PATH=${nvidia}/lib:\$LD_LIBRARY_PATH
       ${bumblebee}/bin/optirun --ldpath ${libglvnd}/lib:${nvidia}/lib "\$@"
       FOO
 
@@ -61,7 +61,7 @@ rec {
       mkdir -p $out/bin
       cat > $out/bin/nix${api}Nvidia << FOO
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${libglvnd}/lib:${nvidiaLibsOnly}/lib
+      export LD_LIBRARY_PATH=${libglvnd}/lib:${nvidiaLibsOnly}/lib:\$LD_LIBRARY_PATH
       "\$@"
       FOO
 
@@ -84,7 +84,7 @@ rec {
       cat > $out/bin/nixGLIntel << FOO
       #!/usr/bin/env sh
       export LIBGL_DRIVERS_PATH=${mesa_drivers}/lib/dri
-      export LD_LIBRARY_PATH=${mesa_drivers}/lib
+      export LD_LIBRARY_PATH=${mesa_drivers}/lib:\$LD_LIBRARY_PATH
       "\$@"
       FOO
 
@@ -111,7 +111,7 @@ rec {
        xorg.libxshmfence
        wayland
        gcc.cc
-     ]}
+     ]}:\$LD_LIBRARY_PATH
      exec "\$@"
      EOF
      chmod u+x "$out/bin/nixVulkanIntel"
