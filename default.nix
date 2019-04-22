@@ -59,9 +59,15 @@ rec {
      };
     } ''
       mkdir -p $out/bin
-      cat > $out/bin/nix${api}Nvidia << FOO
+      cat > $out/bin/nix${api}Nvidia << 'FOO'
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${libglvnd}/lib:${nvidiaLibsOnly}/lib:\$LD_LIBRARY_PATH
+      ${lib.optionalString (api == "Vulkan") ''export VK_LAYER_PATH=${nixpkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d''}
+
+      export LD_LIBRARY_PATH=${lib.makeLibraryPath ([
+        libglvnd
+        nvidiaLibsOnly
+      ] ++ lib.optional (api == "Vulkan") nixpkgs.vulkan-validation-layers)
+      }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
       "\$@"
       FOO
 
