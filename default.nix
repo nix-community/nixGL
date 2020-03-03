@@ -28,6 +28,10 @@ let
 
     executable = true;
     destination = "/bin/${name}";
+
+    checkPhase = ''
+       ${nixpkgs.shellcheck}/bin/shellcheck "$out/bin/${name}"
+    '';
   };
 
 in
@@ -82,7 +86,7 @@ rec {
     name = "nixVulkanIntel";
     text = ''
      #!/usr/bin/env bash
-     if [ ! -z "$LD_LIBRARY_PATH" ]; then
+     if [ -n "$LD_LIBRARY_PATH" ]; then
        echo "Warning, nixVulkanIntel overwriting existing LD_LIBRARY_PATH" 1>&2
      fi
      export LD_LIBRARY_PATH=${lib.makeLibraryPath [
