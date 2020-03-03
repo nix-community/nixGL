@@ -22,6 +22,14 @@ let
   };
 
   nixpkgs = pkgs { overlays = [overlay]; config = {allowUnfree = true;};};
+
+  writeExecutable = { name, text } : nixpkgs.writeTextFile {
+    inherit name text;
+
+    executable = true;
+    destination = "/bin/${name}";
+  };
+
 in
 with nixpkgs;
 rec {
@@ -32,10 +40,8 @@ rec {
       kernel = null;
   };
 
-  nixGLNvidiaBumblebee = writeTextFile {
+  nixGLNvidiaBumblebee = writeExecutable {
     name = "nixGLNvidiaBumblebee";
-    executable = true;
-    destination = "/bin/nixGLNvidiaBumblebee";
     text = ''
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${nvidia}/lib:$LD_LIBRARY_PATH
@@ -43,10 +49,8 @@ rec {
       '';
   };
 
-  nixNvidiaWrapper = api: writeTextFile {
+  nixNvidiaWrapper = api: writeExecutable {
     name = "nix${api}Nvidia";
-    executable = true;
-    destination = "/bin/nix${api}Nvidia";
     text = ''
       #!/usr/bin/env sh
       ${lib.optionalString (api == "Vulkan") ''export VK_LAYER_PATH=${nixpkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d''}
@@ -64,10 +68,8 @@ rec {
 
   nixVulkanNvidia = nixNvidiaWrapper "Vulkan";
 
-  nixGLIntel = writeTextFile {
+  nixGLIntel = writeExecutable {
     name = "nixGLIntel";
-    executable = true;
-    destination = "/bin/nixGLIntel";
     text = ''
       #!/usr/bin/env sh
       export LIBGL_DRIVERS_PATH=${mesa_drivers}/lib/dri
@@ -76,10 +78,8 @@ rec {
       '';
   };
 
-  nixVulkanIntel = writeTextFile {
+  nixVulkanIntel = writeExecutable {
     name = "nixVulkanIntel";
-    executable = true;
-    destination = "/bin/nixVulkanIntel";
     text = ''
      #!/usr/bin/env bash
      if [ ! -z "$LD_LIBRARY_PATH" ]; then
