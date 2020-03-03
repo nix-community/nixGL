@@ -32,34 +32,22 @@ rec {
       kernel = null;
   };
 
-  nixGLNvidiaBumblebee = runCommand "nixGLNvidiaBumblebee" {
-    buildInputs = [ nvidia bumblebee ];
-
-     meta = with pkgs.stdenv.lib; {
-         description = "A tool to launch OpenGL application on system other than NixOS - Nvidia bumblebee version";
-         homepage = "https://github.com/guibou/nixGL";
-     };
-    } ''
-      mkdir -p $out/bin
-      cat > $out/bin/nixGLNvidiaBumblebee << FOO
+  nixGLNvidiaBumblebee = writeTextFile {
+    name = "nixGLNvidiaBumblebee";
+    executable = true;
+    destination = "/bin/nixGLNvidiaBumblebee";
+    text = ''
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${nvidia}/lib:\$LD_LIBRARY_PATH
-      ${bumblebee}/bin/optirun --ldpath ${libglvnd}/lib:${nvidia}/lib "\$@"
-      FOO
-
-      chmod u+x $out/bin/nixGLNvidiaBumblebee
+      export LD_LIBRARY_PATH=${nvidia}/lib:$LD_LIBRARY_PATH
+      ${bumblebee}/bin/optirun --ldpath ${libglvnd}/lib:${nvidia}/lib "$@"
       '';
+  };
 
-  nixNvidiaWrapper = api: runCommand "nix${api}Nvidia" {
-    buildInputs = [ nvidiaLibsOnly ];
-
-     meta = with pkgs.stdenv.lib; {
-         description = "A tool to launch ${api} application on system other than NixOS - Nvidia version";
-         homepage = "https://github.com/guibou/nixGL";
-     };
-    } ''
-      mkdir -p $out/bin
-      cat > $out/bin/nix${api}Nvidia << 'FOO'
+  nixNvidiaWrapper = api: writeTextFile {
+    name = "nix${api}Nvidia";
+    executable = true;
+    destination = "/bin/nix${api}Nvidia";
+    text = ''
       #!/usr/bin/env sh
       ${lib.optionalString (api == "Vulkan") ''export VK_LAYER_PATH=${nixpkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d''}
 
@@ -68,43 +56,31 @@ rec {
         nvidiaLibsOnly
       ] ++ lib.optional (api == "Vulkan") nixpkgs.vulkan-validation-layers)
       }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-      "\$@"
-      FOO
-
-      chmod u+x $out/bin/nix${api}Nvidia
+      "$@"
       '';
+  };
 
   nixGLNvidia = nixNvidiaWrapper "GL";
 
   nixVulkanNvidia = nixNvidiaWrapper "Vulkan";
 
-  nixGLIntel = runCommand "nixGLIntel" {
-    buildInputs = [ mesa_drivers ];
-
-     meta = with pkgs.stdenv.lib; {
-         description = "A tool to launch OpenGL application on system other than NixOS - Intel version";
-         homepage = "https://github.com/guibou/nixGL";
-     };
-    } ''
-      mkdir -p $out/bin
-      cat > $out/bin/nixGLIntel << FOO
+  nixGLIntel = writeTextFile {
+    name = "nixGLIntel";
+    executable = true;
+    destination = "/bin/nixGLIntel";
+    text = ''
       #!/usr/bin/env sh
       export LIBGL_DRIVERS_PATH=${mesa_drivers}/lib/dri
-      export LD_LIBRARY_PATH=${mesa_drivers}/lib:\$LD_LIBRARY_PATH
-      "\$@"
-      FOO
-
-      chmod u+x $out/bin/nixGLIntel
+      export LD_LIBRARY_PATH=${mesa_drivers}/lib:$LD_LIBRARY_PATH
+      "$@"
       '';
+  };
 
-  nixVulkanIntel = runCommand "nixVulkanIntel" {
-     meta = with pkgs.stdenv.lib; {
-         description = "A tool to launch Vulkan application on system other than NixOS - Intel version";
-         homepage = "https://github.com/guibou/nixGL";
-     };
-   } ''
-     mkdir -p "$out/bin"
-     cat > "$out/bin/nixVulkanIntel" << EOF
+  nixVulkanIntel = writeTextFile {
+    name = "nixVulkanIntel";
+    executable = true;
+    destination = "/bin/nixVulkanIntel";
+    text = ''
      #!/usr/bin/env bash
      if [ ! -z "$LD_LIBRARY_PATH" ]; then
        echo "Warning, nixVulkanIntel overwriting existing LD_LIBRARY_PATH" 1>&2
@@ -117,12 +93,10 @@ rec {
        xorg.libxshmfence
        wayland
        gcc.cc
-     ]}:\$LD_LIBRARY_PATH
-     exec "\$@"
-     EOF
-     chmod u+x "$out/bin/nixVulkanIntel"
-     ${shellcheck}/bin/shellcheck "$out/bin/nixVulkanIntel"
-    '';
+     ]}:$LD_LIBRARY_PATH
+     exec "$@"
+     '';
+  };
 
   nixGLCommon = nixGL:
     runCommand "nixGLCommon" {
