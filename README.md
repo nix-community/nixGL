@@ -90,7 +90,7 @@ For NVIDIA GL alone:
 
 For NVIDIA Vulkan alone:
 
-Note that the NVIDIA GL and Vulkan wrappers are identical aside from the name
+The Vulkan wrapper also sets `VK_LAYER_PATH` the the validation layers in the nix store.
 
 ```
 ./nvidiaInstall.py 390.25 nixVulkanNvidia
