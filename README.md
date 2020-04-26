@@ -153,6 +153,10 @@ For example:
 nix-build -E "with import ./default.nix {}; nixGLCommon nixGLIntel"
 ```
 
+# Using nixGL in your project
+
+
+
 
 # Limitations
 
