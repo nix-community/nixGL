@@ -29,8 +29,15 @@ let
     executable = true;
     destination = "/bin/${name}";
 
+
     checkPhase = ''
        ${nixpkgs.shellcheck}/bin/shellcheck "$out/bin/${name}"
+
+       # Check that all the files listed in the output binary exists
+       for i in $(${nixpkgs.pcre}/bin/pcregrep  -o0 '/nix/store/.*?/[^ ":]+' $out/bin/${name})
+       do
+         ls $i > /dev/null || (echo "File $i, referenced in $out/bin/${name} does not exists."; exit -1)
+       done
     '';
   };
 
