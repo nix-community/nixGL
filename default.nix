@@ -88,13 +88,12 @@ rec {
       kernel = null;
   };
 
-  # TODO: 32bit version? Looks like it works fine without anything special.
   nixGLNvidiaBumblebee = addNvidiaVersion (writeExecutable {
     name = "nixGLNvidiaBumblebee";
     text = ''
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${lib.makeLibraryPath [nvidia]}:$LD_LIBRARY_PATH
-      ${bumblebee}/bin/optirun --ldpath ${lib.makeLibraryPath [libglvnd nvidia]} "$@"
+      ${bumblebee}/bin/optirun --ldpath ${lib.makeLibraryPath ([libglvnd nvidia] ++ lib.optionals enable32bits [nvidia.lib32 pkgsi686Linux.libglvnd])} "$@"
       '';
   });
 
@@ -108,7 +107,8 @@ rec {
       export LD_LIBRARY_PATH=${lib.makeLibraryPath ([
         libglvnd
         nvidiaLibsOnly
-      ] ++ lib.optional (api == "Vulkan") nixpkgs.vulkan-validation-layers)
+      ] ++ lib.optional (api == "Vulkan") nixpkgs.vulkan-validation-layers
+      ++ lib.optionals enable32bits [nvidiaLibsOnly.lib32 pkgsi686Linux.libglvnd])
       }:''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
       "$@"
       '';
