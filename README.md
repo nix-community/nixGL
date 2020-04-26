@@ -159,3 +159,9 @@ nix-build -E "with import ./default.nix {}; nixGLCommon nixGLIntel"
 `nixGL` is badly tested, mostly because it is difficult to test automatically in a continuous integration context because you need access to different type of hardware.
 
 Some OpenGL configurations may not work, for example AMD proprietary drivers. There is no fundamental limitation, so if you want support for theses configurations, open an issue.
+
+# Hacking
+
+One great way to contribute to nixGL is to run the test suite. Just run
+`./Test.hs` in the main directory and check that all the test relevant to your
+hardware are green.
