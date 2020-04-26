@@ -63,7 +63,7 @@ rec {
         libglvnd
         nvidiaLibsOnly
       ] ++ lib.optional (api == "Vulkan") nixpkgs.vulkan-validation-layers)
-      }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+      }:''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
       "$@"
       '';
   };
