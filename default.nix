@@ -39,26 +39,7 @@ let
     name = oldAttrs.name + "-${_nvidiaVersion}";
   });
   
-  overlay = self: super:
-  {
-     linuxPackages = super.linuxPackages //
-     {
-         nvidia_x11 = (super.linuxPackages.nvidia_x11.override {
-          }).overrideAttrs(oldAttrs: rec {
-            name = "nvidia-${_nvidiaVersion}";
-            src = let url ="http://download.nvidia.com/XFree86/Linux-x86_64/${_nvidiaVersion}/NVIDIA-Linux-x86_64-${_nvidiaVersion}.run";
-                  in if nvidiaHash != null
-                     then super.fetchurl {
-                       inherit url;
-                       sha256 = nvidiaHash;
-                     } else
-                       builtins.fetchurl url;
-            useGLVND = true;
-          });
-     };
-  };
-
-  nixpkgs = pkgs { overlays = [overlay]; config = {allowUnfree = true;};};
+  nixpkgs = pkgs {config = {allowUnfree = true;};};
 
   writeExecutable = { name, text } : nixpkgs.writeTextFile {
     inherit name text;
@@ -81,7 +62,18 @@ let
 in
 with nixpkgs;
 rec {
-  nvidia = linuxPackages.nvidia_x11;
+  nvidia = (linuxPackages.nvidia_x11.override {
+          }).overrideAttrs(oldAttrs: rec {
+            name = "nvidia-${_nvidiaVersion}";
+            src = let url ="http://download.nvidia.com/XFree86/Linux-x86_64/${_nvidiaVersion}/NVIDIA-Linux-x86_64-${_nvidiaVersion}.run";
+                  in if nvidiaHash != null
+                     then fetchurl {
+                       inherit url;
+                       sha256 = nvidiaHash;
+                     } else
+                       builtins.fetchurl url;
+            useGLVND = true;
+          });
 
   nvidiaLibsOnly = nvidia.override {
       libsOnly = true;
@@ -93,7 +85,7 @@ rec {
     text = ''
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${lib.makeLibraryPath [nvidia]}:$LD_LIBRARY_PATH
-      ${bumblebee}/bin/optirun --ldpath ${lib.makeLibraryPath ([libglvnd nvidia] ++ lib.optionals enable32bits [nvidia.lib32 pkgsi686Linux.libglvnd])} "$@"
+      ${bumblebee.override {nvidia_x11 = nvidia; nvidia_x11_i686 = nvidia.lib32;}}/bin/optirun --ldpath ${lib.makeLibraryPath ([libglvnd nvidia] ++ lib.optionals enable32bits [nvidia.lib32 pkgsi686Linux.libglvnd])} "$@"
       '';
   });
 
