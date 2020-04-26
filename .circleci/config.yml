@@ -1,0 +1,18 @@
+version: 2
+
+jobs:
+  nix:
+    docker:
+      - image: nixos/nix:latest
+    working_directory: ~/NixGL
+    steps:
+      - checkout
+      - run:
+          name: Build all wrapper (with default version for nvidia)
+          command: nix-build ./all.nix
+
+workflows:
+  version: 2
+  nix_stack:
+    jobs:
+      - nix
