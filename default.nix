@@ -1,6 +1,10 @@
 { system ? builtins.currentSystem,
   nvidiaVersion ? null,
   nvidiaHash ? null,
+  # Enable 32 bits driver
+  # This is one by default, you can switch it to off if you want to reduce a
+  # bit the size of nixGL closure.
+  enable32bits ? true,
   pkgs ? import <nixpkgs>
 }:
 
@@ -51,6 +55,7 @@ rec {
       kernel = null;
   };
 
+  # TODO: 32bit version? Looks like it works fine without anything special.
   nixGLNvidiaBumblebee = writeExecutable {
     name = "nixGLNvidiaBumblebee";
     text = ''
@@ -60,6 +65,7 @@ rec {
       '';
   };
 
+  # TODO: 32bit version? Not tested.
   nixNvidiaWrapper = api: writeExecutable {
     name = "nix${api}Nvidia";
     text = ''
@@ -75,23 +81,28 @@ rec {
       '';
   };
 
+  # TODO: 32bit version? Not tested.
   nixGLNvidia = nixNvidiaWrapper "GL";
 
+  # TODO: 32bit version? Not tested.
   nixVulkanNvidia = nixNvidiaWrapper "Vulkan";
 
   nixGLIntel = writeExecutable {
     name = "nixGLIntel";
-    text = ''
+    # add the 32 bits drivers if needed
+    text = let
+      drivers = [mesa_drivers] ++ lib.optional enable32bits pkgsi686Linux.mesa_drivers;
+    in ''
       #!/usr/bin/env sh
-      export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" [mesa_drivers]}
+      export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" drivers}
       export LD_LIBRARY_PATH=${
-        lib.makeLibraryPath [
-        mesa_drivers]
+        lib.makeLibraryPath drivers
         }:$LD_LIBRARY_PATH
       "$@"
       '';
   };
 
+  # TODO: 32 bit version? Not tested.
   nixVulkanIntel = writeExecutable {
     name = "nixVulkanIntel";
     text = ''
