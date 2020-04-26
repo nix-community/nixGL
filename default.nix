@@ -1,5 +1,9 @@
 { system ? builtins.currentSystem,
+  ## Nvidia informations.
+  # Version of the system kernel module. Let it to null to enable auto-detection.
   nvidiaVersion ? null,
+  # Hash of the Nvidia driver .run file. null is fine, but fixing a value here
+  # will be more reproducible and more efficient.
   nvidiaHash ? null,
   # Enable 32 bits driver
   # This is one by default, you can switch it to off if you want to reduce a
@@ -9,17 +13,46 @@
 }:
 
 let
+  # The nvidia version. Either fixed by the `nvidiaVersion` argument, or
+  # auto-detected.
+  _nvidiaVersion = if nvidiaVersion != null
+  then nvidiaVersion
+  else
+    # This is the auto-detection mecanism. This is ugly.
+    # We read /proc/driver/nvidia/version which is set by the Nvidia driver kernel module.
+    # This fails if the nvidia driver kernel module is not loaded.
+    # I'd like to just read the file using `${/proc/driver/nvidia/version}` and
+    # then let nix invalidate the derivation if the content of this file
+    # changes, but that's not possible, see
+    # https://github.com/NixOS/nix/issues/3539
+    # But /proc is readable at build time! So runCommand works fine.
+    import (nixpkgs.runCommand "auto-detect-nvidia" {
+      time = builtins.currentTime;
+      }
+      ''
+        # Written this way so if the version file does not exists, the script crashs
+        VERSION="$(${nixpkgs.pcre}/bin/pcregrep -o1 'Module +([0-9]+\.[0-9]+)' /proc/driver/nvidia/version)"
+        echo "\"$VERSION\"" > $out
+      '');
+
+  addNvidiaVersion = drv: drv.overrideAttrs(oldAttrs: {
+    name = oldAttrs.name + "-${_nvidiaVersion}";
+  });
+  
   overlay = self: super:
   {
      linuxPackages = super.linuxPackages //
      {
          nvidia_x11 = (super.linuxPackages.nvidia_x11.override {
           }).overrideAttrs(oldAttrs: rec {
-            name = "nvidia-${nvidiaVersion}";
-            src = super.fetchurl {
-              url = "http://download.nvidia.com/XFree86/Linux-x86_64/${nvidiaVersion}/NVIDIA-Linux-x86_64-${nvidiaVersion}.run";
-              sha256 = nvidiaHash;
-            };
+            name = "nvidia-${_nvidiaVersion}";
+            src = let url ="http://download.nvidia.com/XFree86/Linux-x86_64/${_nvidiaVersion}/NVIDIA-Linux-x86_64-${_nvidiaVersion}.run";
+                  in if nvidiaHash != null
+                     then super.fetchurl {
+                       inherit url;
+                       sha256 = nvidiaHash;
+                     } else
+                       builtins.fetchurl url;
             useGLVND = true;
           });
      };
@@ -56,17 +89,17 @@ rec {
   };
 
   # TODO: 32bit version? Looks like it works fine without anything special.
-  nixGLNvidiaBumblebee = writeExecutable {
+  nixGLNvidiaBumblebee = addNvidiaVersion (writeExecutable {
     name = "nixGLNvidiaBumblebee";
     text = ''
       #!/usr/bin/env sh
       export LD_LIBRARY_PATH=${lib.makeLibraryPath [nvidia]}:$LD_LIBRARY_PATH
       ${bumblebee}/bin/optirun --ldpath ${lib.makeLibraryPath [libglvnd nvidia]} "$@"
       '';
-  };
+  });
 
   # TODO: 32bit version? Not tested.
-  nixNvidiaWrapper = api: writeExecutable {
+  nixNvidiaWrapper = api: addNvidiaVersion (writeExecutable {
     name = "nix${api}Nvidia";
     text = ''
       #!/usr/bin/env sh
@@ -79,7 +112,7 @@ rec {
       }:''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
       "$@"
       '';
-  };
+  });
 
   # TODO: 32bit version? Not tested.
   nixGLNvidia = nixNvidiaWrapper "GL";
