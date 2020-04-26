@@ -55,8 +55,8 @@ rec {
     name = "nixGLNvidiaBumblebee";
     text = ''
       #!/usr/bin/env sh
-      export LD_LIBRARY_PATH=${nvidia}/lib:$LD_LIBRARY_PATH
-      ${bumblebee}/bin/optirun --ldpath ${libglvnd}/lib:${nvidia}/lib "$@"
+      export LD_LIBRARY_PATH=${lib.makeLibraryPath [nvidia]}:$LD_LIBRARY_PATH
+      ${bumblebee}/bin/optirun --ldpath ${lib.makeLibraryPath [libglvnd nvidia]} "$@"
       '';
   };
 
@@ -83,8 +83,11 @@ rec {
     name = "nixGLIntel";
     text = ''
       #!/usr/bin/env sh
-      export LIBGL_DRIVERS_PATH=${mesa_drivers}/lib/dri
-      export LD_LIBRARY_PATH=${mesa_drivers}/lib:$LD_LIBRARY_PATH
+      export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" [mesa_drivers]}
+      export LD_LIBRARY_PATH=${
+        lib.makeLibraryPath [
+        mesa_drivers]
+        }:$LD_LIBRARY_PATH
       "$@"
       '';
   };
