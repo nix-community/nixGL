@@ -157,6 +157,15 @@ in
   }
   ''
   mkdir -p "$out/bin"
-  cp "${nixGL}/bin/${nixGL.name}" "$out/bin/nixGL";
+  # star because nixGLNvidia... have version prefixed name
+  cp ${nixGL}/bin/* "$out/bin/nixGL";
   '';
+
+  # The output derivation contains nixGL which point either to
+  # nixGLNvidia or nixGLIntel using an heuristic.
+  nixGLDefault =
+    if builtins.pathExists "/proc/driver/nvidia/version"
+    then nixGLCommon nixGLNvidia
+    else nixGLCommon nixGLIntel;
+
   }
