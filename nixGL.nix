@@ -94,6 +94,7 @@ in
       #!/usr/bin/env sh
       ${lib.optionalString (api == "Vulkan") ''export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d''}
 
+        ${lib.optionalString (api == "Vulkan") ''export VK_ICD_FILENAMES=${nvidia}/share/vulkan/icd.d/nvidia.json${lib.optionalString enable32bits ":${nvidia.lib32}/share/vulkan/icd.d/nvidia.json"}:$VK_ICD_FILENAMES''}
         export LD_LIBRARY_PATH=${lib.makeLibraryPath ([
           libglvnd
           nvidiaLibsOnly
@@ -133,6 +134,10 @@ in
      if [ -n "$LD_LIBRARY_PATH" ]; then
        echo "Warning, nixVulkanIntel overwriting existing LD_LIBRARY_PATH" 1>&2
      fi
+
+     # TODO: check mesa things other than intel
+     export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d
+     export VK_ICD_FILENAMES=${mesa_drivers}/share/vulkan/icd.d/intel_icd.x86_64.json${lib.optionalString enable32bits ":${pkgsi686Linux.mesa_drivers}/share/vulkan/icd.d/intel_icd.i686.json"}:$VK_ICD_FILENAMES
      export LD_LIBRARY_PATH=${lib.makeLibraryPath [
        zlib
        libdrm
