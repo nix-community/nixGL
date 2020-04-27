@@ -98,7 +98,7 @@ main = do
       describe "Nvidia - Bumblebee" $ do
         describe "OpenGL" $ do
           checkOpenGL "NVIDIA" "nixGLNvidiaBumblebee"
-        describe "Vulkan" $ do
+        xdescribe "Vulkan" $ do
           -- Not tested: I don't have the hardware (@guibou)
           checkVulkan "NVIDIA" "nixVulkanNvidiaBumblebee"
 
@@ -107,5 +107,4 @@ main = do
         describe "OpenGL" $ do
           checkOpenGL "NVIDIA" "nixGLNvidia"
         describe "Vulkan" $ do
-          describe "Nvidia" $ do
           checkVulkan "NVIDIA" "nixVulkanNvidia"
