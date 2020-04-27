@@ -17,7 +17,7 @@ import Data.List (find)
 currentChannel = "channel:nixos-19.09-small"
 
 -- | Utils function: run a command and returns its output.
-processOutput p args = Text.strip . Text.pack <$> readProcess (Text.unpack p) (Text.unpack <$> args) ""
+processOutput p args = Text.strip . Text.pack <$> readCreateProcess ((proc (Text.unpack p) (Text.unpack <$> args)) { std_err = CreatePipe }) ""
 
 -- * OpenGL
 
@@ -60,6 +60,8 @@ checkVulkan_32_64 vulkaninfo32 vulkaninfo64 vendorName nixGLName = do
 
 
 main = do
+  putStrLn "Running tests for nixGL"
+  putStrLn "It can take a while, this will build and test all drivers in the background"
   glxinfo64 <- (<>"/bin/glxinfo") <$> processOutput "nix-build" [currentChannel, "-A", "glxinfo"]
   glxinfo32 <- (<>"/bin/glxinfo") <$> processOutput "nix-build" [currentChannel, "-A", "pkgsi686Linux.glxinfo"]
 
