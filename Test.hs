@@ -17,12 +17,12 @@ import Data.List (find)
 currentChannel = "channel:nixos-19.09-small"
 
 -- | Utils function: run a command and returns its output.
-processOutput p args = Text.strip . Text.pack <$> readCreateProcess ((proc (Text.unpack p) (Text.unpack <$> args)) { std_err = CreatePipe }) ""
+processOutput p args = Text.strip . Text.pack <$> readCreateProcess ((proc (Text.unpack p) (Text.unpack <$> args)) { std_err = Inherit }) ""
 
 -- * OpenGL
 
 -- | Returns the path to the nixGLXXX binary.
-getNixGLBin version = (<>("/bin/"<>version)) <$> processOutput "nix-build" ["./", "-A", version, "--arg", "pkgs", "import (fetchTarball " <> currentChannel <> ")"]
+getNixGLBin version = (<>("/bin/"<>version)) <$> processOutput "nix-build" ["./", "-A", version, "-I", "nixpkgs=" <> currentChannel]
 
 -- | Returns the vendor string associated with a glxinfo wrapped by a nixGL.
 getVendorString io = do
