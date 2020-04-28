@@ -17,7 +17,7 @@ import Data.List (find)
 currentChannel = "channel:nixos-19.09-small"
 
 -- | Utils function: run a command and returns its output.
-processOutput p args = Text.strip . Text.pack <$> readCreateProcess ((proc (Text.unpack p) (Text.unpack <$> args)) { std_err = CreatePipe }) ""
+processOutput p args = Text.strip . Text.pack <$> readCreateProcess ((proc (Text.unpack p) (Text.unpack <$> args)) { std_err = Inherit }) ""
 
 -- * OpenGL
 
