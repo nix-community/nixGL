@@ -8,12 +8,12 @@
   # This is one by default, you can switch it to off if you want to reduce a
   # bit the size of nixGL closure.
   enable32bits ? true,
-  pkgs ? import <nixpkgs>
-}:
-
-let
-  nixpkgs = pkgs {config = {allowUnfree = true;};};
-in
-  nixpkgs.callPackage ./nixGL.nix {
-    inherit nvidiaVersion nvidiaHash enable32bits;
+  # Make sure to enable config.allowUnfree to the instance of nixpkgs to be
+  # able to access the nvidia drivers.
+  pkgs ? import <nixpkgs> {
+    config = { allowUnfree = true; };
   }
+}:
+pkgs.callPackage ./nixGL.nix {
+  inherit nvidiaVersion nvidiaHash enable32bits;
+}
