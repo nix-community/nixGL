@@ -42,21 +42,19 @@ checkOpenGL_32_64 glxinfo32 glxinfo64 vendorName nixGLName = do
 
 -- * Vulkan
 
--- | Returns the vendor string associated with a glxinfo wrapped by a nixGL.
-getVulkanVendorString io = do
-  output <- Text.lines <$> io
-  pure $ Text.unpack <$> find ("driverName"`Text.isInfixOf`) output
+-- | Heuristic to detect if vulkan work. `driverName` must appears in the output
+checkVulkanIsWorking io = do
+  res <- io
+  res `shouldSatisfy` ("driverName"`Text.isInfixOf`)
 
 -- | Checks that a nixGL wrapper works with glxinfo 32 & 64 bits.
 checkVulkan_32_64 vulkaninfo32 vulkaninfo64 vendorName nixGLName = do
   beforeAll (getNixGLBin nixGLName) $ do
     it "32 bits" $ \nixGLBin -> do
-      Just vendorString <- getVulkanVendorString (processOutput nixGLBin [vulkaninfo32])
-      vendorString `shouldContain` vendorName
+      checkVulkanIsWorking (processOutput nixGLBin [vulkaninfo32])
 
     it "64 bits" $ \nixGLBin -> do
-      Just vendorString <- getVulkanVendorString (processOutput nixGLBin [vulkaninfo64])
-      vendorString `shouldContain` vendorName
+      checkVulkanIsWorking (processOutput nixGLBin [vulkaninfo64])
 
 
 main = do
@@ -85,10 +83,10 @@ main = do
           vendorString `shouldBe` Nothing
       describe "Vulkan" $ do
         it "fails with unwrapped vulkaninfo64" $ do
-          getVulkanVendorString (processOutput vulkaninfo64 []) `shouldThrow` anyIOException
+          processOutput vulkaninfo64 [] `shouldThrow` anyIOException
 
         it "fails with unwrapped vulkaninfo32" $ do
-          getVulkanVendorString (processOutput vulkaninfo32 []) `shouldThrow` anyIOException
+          processOutput vulkaninfo32 [] `shouldThrow` anyIOException
 
     describe "NixGL" $ do
       describe "Mesa" $ do
