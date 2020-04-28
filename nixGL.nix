@@ -33,7 +33,7 @@ let
         # Add an impure parameter to force the rebuild on each access.
         time = builtins.currentTime;
       }
-      "cp /proc/driver/nvidia/version $out";
+      "cp /proc/driver/nvidia/version $out || touch $out";
 
   # The nvidia version. Either fixed by the `nvidiaVersion` argument, or
   # auto-detected. Auto-detection is impure.
@@ -46,8 +46,10 @@ let
         data = builtins.readFile _nvidiaVersionFile;
         versionMatch = builtins.match ".*Module +([0-9]+\\.[0-9]+).*" data;
       in
-      assert builtins.length versionMatch == 1;
-      builtins.head versionMatch;
+      if versionMatch != null then
+        builtins.head versionMatch
+      else
+        null;
 
   addNvidiaVersion = drv: drv.overrideAttrs(oldAttrs: {
     name = oldAttrs.name + "-${_nvidiaVersion}";
@@ -187,8 +189,9 @@ in
   # The output derivation contains nixGL which point either to
   # nixGLNvidia or nixGLIntel using an heuristic.
   nixGLDefault =
-    if builtins.pathExists "/proc/driver/nvidia/version"
-    then nixGLCommon nixGLNvidia
-    else nixGLCommon nixGLIntel;
-
-  }
+    if _nvidiaVersion != null then
+      nixGLCommon nixGLNvidia
+    else
+      nixGLCommon nixGLIntel
+    ;
+}
