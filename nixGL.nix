@@ -126,18 +126,29 @@ in
     '';
   };
 
-  # TODO: 32 bit version? Not tested.
   nixVulkanIntel = writeExecutable {
     name = "nixVulkanIntel";
-    text = ''
+    text = let
+      # generate a file with the listing of all the icd files
+      icd = runCommand "mesa_icd" {}
+        (
+          # 64 bits icd
+          ''ls ${mesa_drivers}/share/vulkan/icd.d/*.json > f
+          ''
+          #  32 bits ones
+          + lib.optionalString enable32bits ''ls ${pkgsi686Linux.mesa_drivers}/share/vulkan/icd.d/*.json >> f
+          ''
+          # concat everything as a one line string with ":" as seperator
+          + ''cat f | xargs | sed "s/ /:/g" > $out''
+          );
+      in ''
      #!/usr/bin/env bash
      if [ -n "$LD_LIBRARY_PATH" ]; then
        echo "Warning, nixVulkanIntel overwriting existing LD_LIBRARY_PATH" 1>&2
      fi
-
-     # TODO: check mesa things other than intel
      export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d
-     export VK_ICD_FILENAMES=${mesa_drivers}/share/vulkan/icd.d/intel_icd.x86_64.json${lib.optionalString enable32bits ":${pkgsi686Linux.mesa_drivers}/share/vulkan/icd.d/intel_icd.i686.json"}:$VK_ICD_FILENAMES
+     ICDS=$(cat ${icd})
+     export VK_ICD_FILENAMES=$ICDS:$VK_ICD_FILENAMES
      export LD_LIBRARY_PATH=${lib.makeLibraryPath [
        zlib
        libdrm
