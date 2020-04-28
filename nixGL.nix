@@ -4,6 +4,11 @@
   # Hash of the Nvidia driver .run file. null is fine, but fixing a value here
   # will be more reproducible and more efficient.
   nvidiaHash ? null,
+  # Alternatively, you can pass a path that points to a nvidia version file
+  # and let nixGL extract the version from it. That file must be a copy of
+  # /proc/driver/nvidia/version. Nix doesn't like zero-sized files (see
+  # https://github.com/NixOS/nix/issues/3539 ).
+  nvidiaVersionFile ? null,
   # Enable 32 bits driver
   # This is one by default, you can switch it to off if you want to reduce a
   # bit the size of nixGL closure.
@@ -14,50 +19,59 @@
 }:
 
 let
+  _nvidiaVersionFile =
+    if nvidiaVersionFile != null then
+      nvidiaVersionFile
+    else
+      # HACK: Get the version from /proc. It turns out that /proc is mounted
+      # inside of the build sandbox and varies from machine to machine.
+      #
+      # builtins.readFile is not able to read /proc files. See
+      # https://github.com/NixOS/nix/issues/3539.
+      runCommand "impure-nvidia-version-file" {
+        # To avoid sharing the build result over time or between machine,
+        # Add an impure parameter to force the rebuild on each access.
+        time = builtins.currentTime;
+      }
+      "cp /proc/driver/nvidia/version $out || touch $out";
+
   # The nvidia version. Either fixed by the `nvidiaVersion` argument, or
-  # auto-detected.
-  _nvidiaVersion = if nvidiaVersion != null
-  then nvidiaVersion
-  else
-    # This is the auto-detection mecanism. This is ugly.
-    # We read /proc/driver/nvidia/version which is set by the Nvidia driver kernel module.
-    # This fails if the nvidia driver kernel module is not loaded.
-    # I'd like to just read the file using `${/proc/driver/nvidia/version}` and
-    # then let nix invalidate the derivation if the content of this file
-    # changes, but that's not possible, see
-    # https://github.com/NixOS/nix/issues/3539
-    # But /proc is readable at build time! So runCommand works fine.
-    import (runCommand "auto-detect-nvidia" {
-      time = builtins.currentTime;
-    }
-    ''
-        # Written this way so if the version file does not exists, the script crashs
-        VERSION="$(${pcre}/bin/pcregrep -o1 'Module +([0-9]+\.[0-9]+)' /proc/driver/nvidia/version)"
-        echo "\"$VERSION\"" > $out
-    '');
+  # auto-detected. Auto-detection is impure.
+  _nvidiaVersion =
+    if nvidiaVersion != null then
+      nvidiaVersion
+    else
+      # Get if from the nvidiaVersionFile
+      let
+        data = builtins.readFile _nvidiaVersionFile;
+        versionMatch = builtins.match ".*Module +([0-9]+\\.[0-9]+).*" data;
+      in
+      if versionMatch != null then
+        builtins.head versionMatch
+      else
+        null;
 
-    addNvidiaVersion = drv: drv.overrideAttrs(oldAttrs: {
-      name = oldAttrs.name + "-${_nvidiaVersion}";
-    });
+  addNvidiaVersion = drv: drv.overrideAttrs(oldAttrs: {
+    name = oldAttrs.name + "-${_nvidiaVersion}";
+  });
 
-    writeExecutable = { name, text } : writeTextFile {
-      inherit name text;
+  writeExecutable = { name, text } : writeTextFile {
+    inherit name text;
 
-      executable = true;
-      destination = "/bin/${name}";
+    executable = true;
+    destination = "/bin/${name}";
 
 
-      checkPhase = ''
-       ${shellcheck}/bin/shellcheck "$out/bin/${name}"
+    checkPhase = ''
+     ${shellcheck}/bin/shellcheck "$out/bin/${name}"
 
-       # Check that all the files listed in the output binary exists
-       for i in $(${pcre}/bin/pcregrep  -o0 '/nix/store/.*?/[^ ":]+' $out/bin/${name})
-       do
-         ls $i > /dev/null || (echo "File $i, referenced in $out/bin/${name} does not exists."; exit -1)
-       done
-      '';
-    };
-
+     # Check that all the files listed in the output binary exists
+     for i in $(${pcre}/bin/pcregrep  -o0 '/nix/store/.*?/[^ ":]+' $out/bin/${name})
+     do
+       ls $i > /dev/null || (echo "File $i, referenced in $out/bin/${name} does not exists."; exit -1)
+     done
+    '';
+  };
 in
   rec {
     nvidia = (linuxPackages.nvidia_x11.override {
@@ -175,8 +189,9 @@ in
   # The output derivation contains nixGL which point either to
   # nixGLNvidia or nixGLIntel using an heuristic.
   nixGLDefault =
-    if builtins.pathExists "/proc/driver/nvidia/version"
-    then nixGLCommon nixGLNvidia
-    else nixGLCommon nixGLIntel;
-
-  }
+    if _nvidiaVersion != null then
+      nixGLCommon nixGLNvidia
+    else
+      nixGLCommon nixGLIntel
+    ;
+}
