@@ -32,6 +32,8 @@ let
         # To avoid sharing the build result over time or between machine,
         # Add an impure parameter to force the rebuild on each access.
         time = builtins.currentTime;
+        preferLocalBuild = true;
+        allowSubstitutes = false;
       }
       "cp /proc/driver/nvidia/version $out || touch $out";
 
