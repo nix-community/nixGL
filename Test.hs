@@ -95,6 +95,14 @@ main = do
         describe "Vulkan" $ do
           checkVulkan "Mesa" "nixVulkanIntel"
 
+      describe "AMD GPU" $ do
+        describe "OpenGL" $ do
+          -- TODO: fill the right name for glxinfo data
+          checkOpenGL "AMD" "nixGLAmdGPU"
+        xdescribe "Vulkan" $ do
+          -- Not tested yet
+          checkVulkan "AMD" "nixVulkanAmdGPU"
+
       describe "Nvidia - Bumblebee" $ do
         describe "OpenGL" $ do
           checkOpenGL "NVIDIA" "nixGLNvidiaBumblebee"

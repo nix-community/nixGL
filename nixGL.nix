@@ -178,6 +178,21 @@ in
     '';
   };
 
+  # Support for amdgpu
+  nixGLAmdGPU = writeExecutable {
+    name = "nixGLAmdGPU";
+    # add the 32 bits drivers if needed
+    text = let
+      drivers = [xorg.xf86videoamdgpu] ++ lib.optional enable32bits pkgsi686Linux.xorg.xf86videoamdgpu;
+    in ''
+      #!/usr/bin/env sh
+      export LD_LIBRARY_PATH=${
+        lib.makeLibraryPath drivers
+      }:$LD_LIBRARY_PATH
+      "$@"
+    '';
+  };
+
   nixGLCommon = nixGL:
   runCommand "nixGLCommon" {
   buildInuts = [nixGL];

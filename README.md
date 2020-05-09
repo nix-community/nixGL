@@ -47,6 +47,7 @@ configuration.
 - `nix-env -f ./ -iA nixGLIntel`: Mesa OpenGL implementation (intel, amd, nouveau, ...).
 - `nix-env -f ./ -iA nixGLNvidiaBumblebee`: Proprietary Nvidia driver on hybrid hardware.
 - `nix-env -f ./ -iA nixGLNvidia`: Proprietary Nvidia driver.
+- `nix-env -f ./ -iA nixGLAmdGPU`: Free AMDGpu driver.
 - `nix-env -f ./ -iA nixGLDefault`: Tries to auto-detect and install Nvidia,
     if not, fallback to mesa.
 
