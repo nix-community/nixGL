@@ -14,7 +14,7 @@
   # bit the size of nixGL closure.
   enable32bits ? true,
   writeTextFile, shellcheck, pcre, runCommand, linuxPackages, fetchurl, lib,
-  bumblebee, libglvnd, vulkan-validation-layers, mesa_drivers,
+  runtimeShell, bumblebee, libglvnd, vulkan-validation-layers, mesa_drivers,
   pkgsi686Linux,zlib, libdrm, xorg, wayland, gcc
 }:
 
@@ -97,7 +97,7 @@ in
   nixGLNvidiaBumblebee = addNvidiaVersion (writeExecutable {
     name = "nixGLNvidiaBumblebee";
     text = ''
-      #!/usr/bin/env sh
+      #!${runtimeShell}
       export LD_LIBRARY_PATH=${lib.makeLibraryPath [nvidia]}:$LD_LIBRARY_PATH
       ${bumblebee.override {nvidia_x11 = nvidia; nvidia_x11_i686 = nvidia.lib32;}}/bin/optirun --ldpath ${lib.makeLibraryPath ([libglvnd nvidia] ++ lib.optionals enable32bits [nvidia.lib32 pkgsi686Linux.libglvnd])} "$@"
     '';
@@ -107,7 +107,7 @@ in
   nixNvidiaWrapper = api: addNvidiaVersion (writeExecutable {
     name = "nix${api}Nvidia";
     text = ''
-      #!/usr/bin/env sh
+      #!${runtimeShell}
       ${lib.optionalString (api == "Vulkan") ''export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d''}
 
         ${lib.optionalString (api == "Vulkan") ''export VK_ICD_FILENAMES=${nvidia}/share/vulkan/icd.d/nvidia.json${lib.optionalString enable32bits ":${nvidia.lib32}/share/vulkan/icd.d/nvidia.json"}:$VK_ICD_FILENAMES''}
@@ -133,7 +133,7 @@ in
     text = let
       drivers = [mesa_drivers] ++ lib.optional enable32bits pkgsi686Linux.mesa_drivers;
     in ''
-      #!/usr/bin/env sh
+      #!${runtimeShell}
       export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" drivers}
       export LD_LIBRARY_PATH=${
         lib.makeLibraryPath drivers
@@ -158,7 +158,7 @@ in
           + ''cat f | xargs | sed "s/ /:/g" > $out''
           );
       in ''
-     #!/usr/bin/env bash
+     #!${runtimeShell}
      if [ -n "$LD_LIBRARY_PATH" ]; then
        echo "Warning, nixVulkanIntel overwriting existing LD_LIBRARY_PATH" 1>&2
      fi
