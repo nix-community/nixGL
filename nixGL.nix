@@ -110,12 +110,12 @@ in
       #!/usr/bin/env sh
       ${lib.optionalString (api == "Vulkan") ''export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d''}
 
-        ${lib.optionalString (api == "Vulkan") ''export VK_ICD_FILENAMES=${nvidia}/share/vulkan/icd.d/nvidia.json${lib.optionalString enable32bits ":${nvidia.lib32}/share/vulkan/icd.d/nvidia.json"}:$VK_ICD_FILENAMES''}
+        ${lib.optionalString (api == "Vulkan") ''export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia.json${lib.optionalString enable32bits ":${nvidiaLibsOnly.lib32}/share/vulkan/icd.d/nvidia.json"}:$VK_ICD_FILENAMES''}
         export LD_LIBRARY_PATH=${lib.makeLibraryPath ([
           libglvnd
           nvidiaLibsOnly
         ] ++ lib.optional (api == "Vulkan") vulkan-validation-layers
-        ++ lib.optionals enable32bits [nvidia.lib32 pkgsi686Linux.libglvnd])
+        ++ lib.optionals enable32bits [nvidiaLibsOnly.lib32 pkgsi686Linux.libglvnd])
       }:''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
         "$@"
       '';
