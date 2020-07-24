@@ -101,7 +101,7 @@ After installing `nixVulkanIntel`.
 ```bash
 $ sudo apt install mesa-vulkan-drivers
 ...
-$ nixVulkanIntel $(nix-build '<nixpkgs>' --no-out-link -A vulkan-loader)/bin/vulkaninfo | grep VkPhysicalDeviceProperties -A 7
+$ nixVulkanIntel $(nix-build '<nixpkgs>' --no-out-link -A vulkan-tools)/bin/vulkaninfo | grep VkPhysicalDeviceProperties -A 7
 VkPhysicalDeviceProperties:
 ===========================
         apiVersion     = 0x400036  (1.0.54)
