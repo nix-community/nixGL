@@ -118,7 +118,7 @@ VkPhysicalDeviceProperties:
 
 ```bash
 building '/nix/store/ijs5h6h07faai0k74diiy5b2xlxh891g-auto-detect-nvidia.drv'...
-pcregrep: Failed to open /proc/driver/nvidia/ersion: No such file or directory
+pcregrep: Failed to open /proc/driver/nvidia/version: No such file or directory
 builder for '/nix/store/ijs5h6h07faai0k74diiy5b2xlxh891g-auto-detect-nvidia.drv' failed with exit code 2
 error: build of '/nix/store/ijs5h6h07faai0k74diiy5b2xlxh891g-auto-detect-nvidia.drv' faile
 ```
