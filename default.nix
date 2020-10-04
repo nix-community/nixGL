@@ -10,7 +10,7 @@
   # https://github.com/NixOS/nix/issues/3539 ).
   nvidiaVersionFile ? null,
   # Enable 32 bits driver
-  # This is one by default, you can switch it to off if you want to reduce a
+  # This is ne by default, you can switch it to off if you want to reduce a
   # bit the size of nixGL closure.
   enable32bits ? true,
   # Make sure to enable config.allowUnfree to the instance of nixpkgs to be
