@@ -46,7 +46,7 @@ let
       # Get if from the nvidiaVersionFile
       let
         data = builtins.readFile _nvidiaVersionFile;
-        versionMatch = builtins.match ".*Module +([0-9]+\\.[0-9]+).*" data;
+        versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
       in
       if versionMatch != null then
         builtins.head versionMatch
@@ -79,7 +79,7 @@ in
     nvidia = (linuxPackages.nvidia_x11.override {
     }).overrideAttrs(oldAttrs: rec {
       name = "nvidia-${_nvidiaVersion}";
-      src = let url ="http://download.nvidia.com/XFree86/Linux-x86_64/${_nvidiaVersion}/NVIDIA-Linux-x86_64-${_nvidiaVersion}.run";
+      src = let url = "https://download.nvidia.com/XFree86/Linux-x86_64/${_nvidiaVersion}/NVIDIA-Linux-x86_64-${_nvidiaVersion}.run";
       in if nvidiaHash != null
       then fetchurl {
         inherit url;
