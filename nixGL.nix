@@ -178,14 +178,10 @@ in
     '';
   };
 
-  nixGLCommon = nixGL:
-  runCommand "nixGLCommon" {
-  buildInuts = [nixGL];
-  }
-  ''
-  mkdir -p "$out/bin"
-  # star because nixGLNvidia... have version prefixed name
-  cp ${nixGL}/bin/* "$out/bin/nixGL";
+  nixGLCommon = nixGL: runCommand "nixGLCommon" {} ''
+    mkdir -p "$out/bin"
+    # star because nixGLNvidia... have version prefixed name
+    cp ${nixGL}/bin/* "$out/bin/nixGL";
   '';
 
   # The output derivation contains nixGL which point either to
