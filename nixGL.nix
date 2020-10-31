@@ -132,12 +132,18 @@ in
     # add the 32 bits drivers if needed
     text = let
       drivers = [mesa_drivers] ++ lib.optional enable32bits pkgsi686Linux.mesa_drivers;
+      glxindirect = runCommand "mesa_glxindirect" {}
+        (
+          ''mkdir -p $out/lib
+            ln -s ${mesa_drivers}/lib/libGLX_mesa.so.0 $out/lib/libGLX_indirect.so.0
+          ''
+          );
     in ''
       #!${runtimeShell}
       export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" drivers}
       export LD_LIBRARY_PATH=${
         lib.makeLibraryPath drivers
-      }:$LD_LIBRARY_PATH
+      }:${glxindirect}/lib:$LD_LIBRARY_PATH
       "$@"
     '';
   };
