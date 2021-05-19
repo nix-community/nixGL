@@ -1,13 +1,10 @@
 # NixGL
 
-NixGL solve the "OpenGL" problem with [nix](https://nixos.org/nix/). Works all mesa
-drivers (intel cards and "free" version fro Nvidia or AMD cards), Nvidia
-proprietary drivers, even with hybrid configuration (with bumblebee). It works
-for Vulkan programs too.
+NixGL solve the "OpenGL" problem with [nix](https://nixos.org/nix/). It works with all mesa drivers (Intel cards and "free" version for Nvidia or AMD cards), Nvidia proprietary drivers, and even with hybrid configuration via bumblebee. It works for Vulkan programs too.
 
 # Motivation
 
-You use Nix on any distribution, and any GL application installed fails with this error:
+Using Nix on non-NixOS distros, it's common to see GL application errors:
 
 ```bash
 $ program
@@ -24,58 +21,64 @@ libGL error: failed to load driver: swrast
 NixGL provides a set of wrappers able to launch GL or Vulkan applications:
 
 ```bash
-$ nixGLXXX program
-$ nixVulkanXXX program
+$ nixGL program
+$ nixVulkan program
 ```
 
 # Installation
 
-Clone this git repository:
+## nix-channel (Recommended)
+
+To get started,
+
+```bash
+$ nix-channel --add https://github.com/guibou/nixGL/archive/master.tar.gz nixgl && nix-channel --update
+$ nix-env -iA nixgl.nixGLDefault   # or replace `nixGLDefault` with your desired wrapper
+```
+
+Many wrappers are available, depending on your hardware and the graphical API you want to use (i.e. Vulkan or OpenGL). You may want to install a few of them, for example if you want to support OpenGL and Vulkan on a laptop with an hybrid configuration.
+
+OpenGL wrappers:
+
+- `nixGLDefault`: Tries to auto-detect and install Nvidia, if not, fallback to mesa. Recommended. Invoke with `nixGL program`.
+- `nixGLNvidia`: Proprietary Nvidia driver.
+- `nixGLIntel`: Mesa OpenGL implementation (intel, amd, nouveau, ...).
+- `nixGLNvidiaBumblebee`: Proprietary Nvidia driver on hybrid hardware.
+
+Vulkan wrappers:
+
+- `nixVulkanNvidia`: Proprietary Nvidia driver.
+- `nixVulkanIntel`: Mesa Vulkan implementation.
+
+The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix store.
+
+## Installation from source
 
 ```bash
 $ git clone https://github.com/guibou/nixGL
 $ cd nixGL
+$ nix-env -f ./ -iA <your desired wrapper name>
 ```
-
-Many wrappers are available, depending on your hardware and the graphical API
-you want to use (i.e. Vulkan or OpenGL). You may want to install a few of them,
-for example if you want to support OpenGL and Vulkan on a laptop with an hybrid
-configuration.
-
-## OpenGL wrappers
-
-- `nix-env -f ./ -iA nixGLIntel`: Mesa OpenGL implementation (intel, amd, nouveau, ...).
-- `nix-env -f ./ -iA nixGLNvidiaBumblebee`: Proprietary Nvidia driver on hybrid hardware.
-- `nix-env -f ./ -iA nixGLNvidia`: Proprietary Nvidia driver.
-- `nix-env -f ./ -iA nixGLDefault`: Tries to auto-detect and install Nvidia,
-    if not, fallback to mesa.
-
-## Vulkan wrappers
-
-- `nix-env -f ./ -iA nixVulkanNvidia`: Proprietary Nvidia driver.
-- `nix-env -f ./ -iA nixVulkanIntel`: Mesa Vulkan implementation.
-
-The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix store.
 
 # Usage
 
-Just launch the program you want prefixed by the right wrapped.
+Just launch the program you want prefixed by the right wrapper.
 
-For OpenGL programs:
+For example, for OpenGL programs:
 
 ```bash
-$ nixGLXXX program args
+$ nixGL program args                 # For the `nixGLDefault` wrapper, recommended.
+$ nixGLNvidia program args
+$ nixGLIntel program args
+$ nixGLNvidiaBumblebee program args
 ```
 
 For Vulkan programs:
 
 ```bash
-$ nixVulkanXXX program args
+$ nixVulkanNividia program args
+$ nixVulkanIntel program args
 ```
-
-Replace `XXX` by the implementation pour previously selected, such as `nixGLIntel` or `nixGLNvidia`.
-
-## Examples
 
 # OpenGL - Hybrid Intel + Nvidia laptop
 
@@ -154,11 +157,6 @@ For example:
 ```
 nix-build -E "with import ./default.nix {}; nixGLCommon nixGLIntel"
 ```
-
-# Using nixGL in your project
-
-
-
 
 # Limitations
 
