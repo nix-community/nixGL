@@ -33,22 +33,22 @@ To get started,
 
 ```bash
 $ nix-channel --add https://github.com/guibou/nixGL/archive/master.tar.gz nixgl && nix-channel --update
-$ nix-env -iA nixgl.nixGLDefault   # or replace `nixGLDefault` with your desired wrapper
+$ nix-env -iA nixgl.auto.nixGLDefault   # or replace `nixGLDefault` with your desired wrapper
 ```
 
 Many wrappers are available, depending on your hardware and the graphical API you want to use (i.e. Vulkan or OpenGL). You may want to install a few of them, for example if you want to support OpenGL and Vulkan on a laptop with an hybrid configuration.
 
 OpenGL wrappers:
 
-- `nixGLDefault`: Tries to auto-detect and install Nvidia, if not, fallback to mesa. Recommended. Invoke with `nixGL program`.
-- `nixGLNvidia`: Proprietary Nvidia driver.
+- `auto.nixGLDefault`: Tries to auto-detect and install Nvidia, if not, fallback to mesa. Recommended. Invoke with `nixGL program`.
+- `auto.nixGLNvidia`: Proprietary Nvidia driver (auto detection of version)
+- `auto.nixGLNvidiaBumblebee`: Proprietary Nvidia driver on hybrid hardware (auto detection).
 - `nixGLIntel`: Mesa OpenGL implementation (intel, amd, nouveau, ...).
-- `nixGLNvidiaBumblebee`: Proprietary Nvidia driver on hybrid hardware.
 
 Vulkan wrappers:
 
-- `nixVulkanNvidia`: Proprietary Nvidia driver.
-- `nixVulkanIntel`: Mesa Vulkan implementation.
+- `auto.nixVulkanNvidia`: Proprietary Nvidia driver (auto detection).
+- `auto.nixVulkanIntel`: Mesa Vulkan implementation (auto detection).
 
 The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix store.
 
@@ -76,7 +76,7 @@ $ nixGLNvidiaBumblebee program args
 For Vulkan programs:
 
 ```bash
-$ nixVulkanNividia program args
+$ nixVulkanNvidia program args
 $ nixVulkanIntel program args
 ```
 
@@ -132,6 +132,9 @@ You can run the Nvidia installer using an explicit version string instead of the
 nix-build -A nixGLNvidia --argstr nvidiaVersion 440.82
 ```
 
+(or `nixGLNvidiaBumblebee`, `nixVulkanNividia`)
+
+
 The version of your driver can be found using `glxinfo` from your system default package manager, or `nvidia-settings`.
 
 ## On nixOS
@@ -150,7 +153,7 @@ Users of Nvidia legacy driver should use the `backport/noGLVND` branch. This bra
 
 # `nixGLCommon`
 
-`nixGLCommon nixGLXXX` can be used to get `nixGL` executable which fallsback to `nixGLXXX`. It is a shorter name for people with only one OpenGL configuration.
+`nixGLCommon nixGLXXX` can be used to get `nixGL` executable which fallback to `nixGLXXX`. It is a shorter name for people with only one OpenGL configuration.
 
 For example:
 
