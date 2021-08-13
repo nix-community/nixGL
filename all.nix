@@ -6,11 +6,11 @@ let
     nvidiaHash = "edd415acf2f75a659e0f3b4f27c1fab770cf21614e84a18152d94f0d004a758e";
   });
 
-  versionFile = pkgs.recurseIntoAttrs (pkgs.callPackage ./nixGL.nix {
+  versionFile = (pkgs.callPackage ./nixGL.nix {
     nvidiaVersionFile = pkgs.writeText "nvidia-version-440.82" ''
       NVRM version: NVIDIA UNIX x86_64 Kernel Module  440.82  Wed Apr  1 20:04:33 UTC 2020
       GCC version:  gcc version 9.3.0 (Arch Linux 9.3.0-1)
     '';
   });
 in
-(with pure; [nixGLIntel nixVulkanNvidia nixGLNvidia nixVulkanIntel]) ++ (with versionFile; [nixGLNvidia nixGLDefault nixVulkanNvidia])
+(with pure; [nixGLIntel nixVulkanNvidia nixGLNvidia nixVulkanIntel]) ++ (with versionFile.auto; [nixGLNvidia nixGLDefault nixVulkanNvidia])
