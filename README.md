@@ -32,7 +32,7 @@ $ nixVulkan program
 To get started,
 
 ```bash
-$ nix-channel --add https://github.com/guibou/nixGL/archive/master.tar.gz nixgl && nix-channel --update
+$ nix-channel --add https://github.com/guibou/nixGL/archive/main.tar.gz nixgl && nix-channel --update
 $ nix-env -iA nixgl.auto.nixGLDefault   # or replace `nixGLDefault` with your desired wrapper
 ```
 
