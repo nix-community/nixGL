@@ -124,8 +124,8 @@ let
           ++ lib.optional enable32bits pkgsi686Linux.mesa.drivers;
         glxindirect = runCommand "mesa_glxindirect" { } (''
           mkdir -p $out/lib
-                      ln -s ${mesa.drivers}/lib/libGLX_mesa.so.0 $out/lib/libGLX_indirect.so.0
-                    '');
+          ln -s ${mesa.drivers}/lib/libGLX_mesa.so.0 $out/lib/libGLX_indirect.so.0
+        '');
       in ''
         #!${runtimeShell}
         export LIBGL_DRIVERS_PATH=${
@@ -146,11 +146,11 @@ let
           # 64 bits icd
           ''
             ls ${mesa.drivers}/share/vulkan/icd.d/*.json > f
-                      ''
+          ''
           #  32 bits ones
           + lib.optionalString enable32bits ''
             ls ${pkgsi686Linux.mesa.drivers}/share/vulkan/icd.d/*.json >> f
-                      ''
+          ''
           # concat everything as a one line string with ":" as seperator
           + ''cat f | xargs | sed "s/ /:/g" > $out'');
       in ''
