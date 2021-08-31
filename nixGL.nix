@@ -12,9 +12,11 @@ nvidiaVersionFile ? null,
 # Enable 32 bits driver
 # This is one by default, you can switch it to off if you want to reduce a
 # bit the size of nixGL closure.
-enable32bits ? true, writeTextFile, shellcheck, pcre, runCommand, linuxPackages
+enable32bits ? true
+, writeTextFile, shellcheck, pcre, runCommand, linuxPackages
 , fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
-, mesa, pkgsi686Linux, zlib, libdrm, xorg, wayland, gcc }:
+, mesa, libvdpau-va-gl, intel-media-driver, vaapiIntel, pkgsi686Linux, driversi686Linux
+, zlib, libdrm, xorg, wayland, gcc }:
 
 let
   writeExecutable = { name, text }:
@@ -120,20 +122,21 @@ let
       name = "nixGLIntel";
       # add the 32 bits drivers if needed
       text = let
-        drivers = [ mesa.drivers ]
+        mesa-drivers = [ mesa.drivers ]
           ++ lib.optional enable32bits pkgsi686Linux.mesa.drivers;
+        intel-driver = [ intel-media-driver vaapiIntel ]
+          ++ lib.optionals enable32bits [ pkgsi686Linux.intel-media-driver driversi686Linux.vaapiIntel ];
+        libvdpau = [ libvdpau-va-gl ]
+          ++ lib.optional enable32bits pkgsi686Linux.libvdpau-va-gl;
         glxindirect = runCommand "mesa_glxindirect" { } (''
           mkdir -p $out/lib
           ln -s ${mesa.drivers}/lib/libGLX_mesa.so.0 $out/lib/libGLX_indirect.so.0
         '');
       in ''
         #!${runtimeShell}
-        export LIBGL_DRIVERS_PATH=${
-          lib.makeSearchPathOutput "lib" "lib/dri" drivers
-        }
-        export LD_LIBRARY_PATH=${
-          lib.makeLibraryPath drivers
-        }:${glxindirect}/lib:$LD_LIBRARY_PATH
+        export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" mesa-drivers}
+        export LIBVA_DRIVERS_PATH=${lib.makeSearchPathOutput "out" "lib/dri" intel-driver}
+        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:$LD_LIBRARY_PATH
         "$@"
       '';
     };
