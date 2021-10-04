@@ -125,7 +125,8 @@ let
         mesa-drivers = [ mesa.drivers ]
           ++ lib.optional enable32bits pkgsi686Linux.mesa.drivers;
         intel-driver = [ intel-media-driver vaapiIntel ]
-          ++ lib.optionals enable32bits [ pkgsi686Linux.intel-media-driver driversi686Linux.vaapiIntel ];
+          # Note: intel-media-driver is disable for i686 until https://github.com/NixOS/nixpkgs/issues/140471 is fixed
+          ++ lib.optionals enable32bits [ /* pkgsi686Linux.intel-media-driver */ driversi686Linux.vaapiIntel ];
         libvdpau = [ libvdpau-va-gl ]
           ++ lib.optional enable32bits pkgsi686Linux.libvdpau-va-gl;
         glxindirect = runCommand "mesa_glxindirect" { } (''
