@@ -14,7 +14,7 @@ nvidiaVersionFile ? null,
 # bit the size of nixGL closure.
 enable32bits ? true
 , writeTextFile, shellcheck, pcre, runCommand, linuxPackages
-, fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
+, fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers, libGL
 , mesa, libvdpau-va-gl, intel-media-driver, vaapiIntel, pkgsi686Linux, driversi686Linux
 , zlib, libdrm, xorg, wayland, gcc }:
 
@@ -137,7 +137,7 @@ let
         #!${runtimeShell}
         export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" mesa-drivers}
         export LIBVA_DRIVERS_PATH=${lib.makeSearchPathOutput "out" "lib/dri" intel-driver}
-        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libGL]}:$LD_LIBRARY_PATH
         "$@"
       '';
     };
