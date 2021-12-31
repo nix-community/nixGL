@@ -137,7 +137,7 @@ let
         #!${runtimeShell}
         export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" mesa-drivers}
         export LIBVA_DRIVERS_PATH=${lib.makeSearchPathOutput "out" "lib/dri" intel-driver}
-        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libglvnd]}:$LD_LIBRARY_PATH
         "$@"
       '';
     };
