@@ -129,7 +129,7 @@ error: build of '/nix/store/ijs5h6h07faai0k74diiy5b2xlxh891g-auto-detect-nvidia.
 You can run the Nvidia installer using an explicit version string instead of the automatic detection method:
 
 ```bash
-nix-build -A nixGLNvidia --argstr nvidiaVersion 440.82
+nix-build -A auto.nixGLNvidia --argstr nvidiaVersion 440.82
 ```
 
 (or `nixGLNvidiaBumblebee`, `nixVulkanNividia`)
