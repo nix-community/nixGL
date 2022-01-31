@@ -52,6 +52,36 @@ Vulkan wrappers:
 
 The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix store.
 
+## flakes
+
+Add nixGL as a flake input:
+
+
+```Nix
+{
+  inputs = {
+    nixgl.url = "github:guibou/nixGL";
+  };
+  outputs = { nixgl, ... }: { };
+}
+```
+
+Then, use the flake's `overlay` attr:
+
+```Nix
+{
+  outputs = { nixgl, nixpkgs, ... }:
+  let
+    pkgs = import nixpkgs {
+      system = "x86_64-linux";
+      overlays = [ nixgl.overlay ];
+    };
+  in
+  # You can now reference pkgs.nixgl.nixGLIntel, etc.
+  { }
+}
+```
+
 ## Installation from source
 
 ```bash
