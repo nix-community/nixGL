@@ -48,11 +48,19 @@ OpenGL wrappers:
 Vulkan wrappers:
 
 - `auto.nixVulkanNvidia`: Proprietary Nvidia driver (auto detection).
-- `auto.nixVulkanIntel`: Mesa Vulkan implementation (auto detection).
+- `nixVulkanIntel`: Mesa Vulkan implementation.
 
 The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix store.
 
-## flakes
+## Flakes
+
+### Directly run nixGL
+
+```sh
+nix run --impure github:guibou/nixGL -- program
+```
+
+### Use an overlay
 
 Add nixGL as a flake input:
 
