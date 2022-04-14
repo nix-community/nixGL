@@ -181,7 +181,7 @@ let
     };
 
     nixGLCommon = nixGL:
-      runCommand "nixGLCommon" { } ''
+      runCommand "nixGL" { } ''
         mkdir -p "$out/bin"
         # star because nixGLNvidia... have version prefixed name
         cp ${nixGL}/bin/* "$out/bin/nixGL";
