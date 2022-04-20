@@ -59,6 +59,13 @@ The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix st
 ```sh
 nix run --impure github:guibou/nixGL -- program
 ```
+You can also specify which wrapper to use instead of using the default auto detection:
+
+```sh
+nix run --impure github:guibou/nixGL#nixGLIntel -- program
+```
+
+This will result in a lighter download and execution time.
 
 #### Error with GLIBC version
 
