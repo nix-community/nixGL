@@ -60,6 +60,29 @@ The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix st
 nix run --impure github:guibou/nixGL -- program
 ```
 
+#### Error with GLIBC version
+
+if you get errors with messages similar to
+```
+/nix/store/g02b1lpbddhymmcjb923kf0l7s9nww58-glibc-2.33-123/lib/libc.so.6: version `GLIBC_2.34' not found (required by /nix/store/hrl51nkr7dszlwcs29wmyxq0jsqlaszn-libglvnd-1.4.0/lib/libGLX.so.0)
+```
+
+You may need to run `nixGL` based on an older `nixpkgs` (defaults to `nixos-21.11`) like so:
+
+```sh
+nix run --override-input nixpkgs nixpkgs/nixos-21.05 --impure github:guibou/nixGL -- program
+```
+
+#### Error about experimental features
+
+You can directly use:
+
+```sh
+nix --extra-experimental-features "nix-command flakes" run --impure github:guibou/nixGL -- program
+```
+
+Or set the appropriate conf in `~/.config/nix/nix.conf` / `/etc/nix/nix.conf` / `nix.extraOptions`.
+
 ### Use an overlay
 
 Add nixGL as a flake input:
