@@ -62,10 +62,10 @@ nix run --impure github:guibou/nixGL -- program
 You can also specify which wrapper to use instead of using the default auto detection:
 
 ```sh
-nix run --impure github:guibou/nixGL#nixGLIntel -- program
+nix run github:guibou/nixGL#nixGLIntel -- program
 ```
 
-This will result in a lighter download and execution time.
+This will result in a lighter download and execution time. Also, this evaluation is pure.
 
 #### Error with GLIBC version
 
