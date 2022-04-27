@@ -1,8 +1,6 @@
 {
   description = "A wrapper tool for nix OpenGL applications";
 
-  inputs.nixpkgs.url = "nixpkgs/nixos-21.11";
-
   outputs = { self, nixpkgs }: let 
     pkgs = import ./default.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
   in rec {
