@@ -48,11 +48,55 @@ OpenGL wrappers:
 Vulkan wrappers:
 
 - `auto.nixVulkanNvidia`: Proprietary Nvidia driver (auto detection).
-- `auto.nixVulkanIntel`: Mesa Vulkan implementation (auto detection).
+- `nixVulkanIntel`: Mesa Vulkan implementation.
 
 The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix store.
 
-## flakes
+## Flakes
+
+### Directly run nixGL
+
+You need to specify the same version of `nixpkgs` that your `program` is using. For example, replace `nixos-21.11` with `nixos-21.05`.
+
+```sh
+nix run --override-input nixpkgs nixpkgs/nixos-21.11 --impure github:guibou/nixGL -- program
+```
+
+If you use the default `nixpkgs` channel (i.e. `nixpkgs-unstable`), you can ommit those arguments like so:
+
+```sh
+nix run --impure github:guibou/nixGL -- program
+```
+
+You can also specify which wrapper to use instead of using the default auto detection:
+
+```sh
+nix run github:guibou/nixGL#nixGLIntel -- program
+```
+
+This will result in a lighter download and execution time. Also, this evaluation is pure.
+
+
+#### Error about experimental features
+
+You can directly use:
+
+```sh
+nix --extra-experimental-features "nix-command flakes" run --impure github:guibou/nixGL -- program
+```
+
+Or set the appropriate conf in `~/.config/nix/nix.conf` / `/etc/nix/nix.conf` / `nix.extraOptions`.
+
+#### Error with GLIBC version
+
+if you get errors with messages similar to
+```
+/nix/store/g02b1lpbddhymmcjb923kf0l7s9nww58-glibc-2.33-123/lib/libc.so.6: version `GLIBC_2.34' not found (required by /nix/store/hrl51nkr7dszlwcs29wmyxq0jsqlaszn-libglvnd-1.4.0/lib/libGLX.so.0)
+```
+
+It means that there's a mismatch between the versions of `nixpkgs` used by `nixGL` and `program`.
+
+### Use an overlay
 
 Add nixGL as a flake input:
 
