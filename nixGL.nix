@@ -92,6 +92,12 @@ let
             ${lib.optionalString (api == "Vulkan")
             "export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d"}
 
+            ${"export __EGL_VENDOR_LIBRARY_FILENAMES=${nvidiaLibsOnly}/share/glvnd/egl_vendor.d/10_nvidia.json${
+              lib.optionalString enable32bits
+              ":${nvidiaLibsOnly.lib32}/share/glvnd/egl_vendor.d/10_nvidia.json"
+              }:$__EGL_VENDOR_LIBRARY_FILENAMES"
+            }
+
               ${
                 lib.optionalString (api == "Vulkan")
                 "export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd.json${
@@ -137,6 +143,11 @@ let
         #!${runtimeShell}
         export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" mesa-drivers}
         export LIBVA_DRIVERS_PATH=${lib.makeSearchPathOutput "out" "lib/dri" intel-driver}
+        ${"export __EGL_VENDOR_LIBRARY_FILENAMES=${mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json${
+          lib.optionalString enable32bits
+          ":${pkgsi686Linux.mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json"
+          }:$__EGL_VENDOR_LIBRARY_FILENAMES"
+        }
         export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libglvnd]}:$LD_LIBRARY_PATH
         "$@"
       '';
