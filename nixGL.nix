@@ -45,6 +45,7 @@ let
       nvidiaDrivers = (linuxPackages.nvidia_x11.override { }).overrideAttrs
         (oldAttrs: rec {
           pname = "nvidia";
+          name = "nvidia-x11-${version}-nixGL";
           inherit version;
           src = let
             url =
@@ -91,11 +92,13 @@ let
             #!${runtimeShell}
             ${lib.optionalString (api == "Vulkan")
             "export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d"}
+            NVIDIA_JSON=(${nvidiaLibsOnly}/share/glvnd/egl_vendor.d/*nvidia.json)
+            ${lib.optionalString enable32bits "NVIDIA_JSON32=(${nvidiaLibsOnly.lib32}/share/glvnd/egl_vendor.d/*nvidia.json)"}
 
-            ${"export __EGL_VENDOR_LIBRARY_FILENAMES=${nvidiaLibsOnly}/share/glvnd/egl_vendor.d/10_nvidia.json${
+            ${''export __EGL_VENDOR_LIBRARY_FILENAMES="''${NVIDIA_JSON[*]}${
               lib.optionalString enable32bits
-              ":${nvidiaLibsOnly.lib32}/share/glvnd/egl_vendor.d/10_nvidia.json"
-              }:$__EGL_VENDOR_LIBRARY_FILENAMES"
+              '':''${NVIDIA_JSON32[*]}''
+              }:$__EGL_VENDOR_LIBRARY_FILENAMES"''
             }
 
               ${
