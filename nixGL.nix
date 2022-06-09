@@ -45,6 +45,7 @@ let
       nvidiaDrivers = (linuxPackages.nvidia_x11.override { }).overrideAttrs
         (oldAttrs: rec {
           pname = "nvidia";
+          name = "nvidia-x11-${version}-nixGL";
           inherit version;
           src = let
             url =
