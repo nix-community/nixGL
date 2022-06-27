@@ -116,7 +116,7 @@ let
                     pkgsi686Linux.libglvnd
                   ])
               }:''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-              "$@"
+              exec "$@"
           '';
         };
 
@@ -152,7 +152,7 @@ let
           }:$__EGL_VENDOR_LIBRARY_FILENAMES"
         }
         export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libglvnd]}:$LD_LIBRARY_PATH
-        "$@"
+        exec "$@"
       '';
     };
 
