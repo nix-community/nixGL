@@ -17,13 +17,19 @@
   # able to access the nvidia drivers.
   pkgs ? import <nixpkgs> {
     config = { allowUnfree = true; };
-  }
+  },
+  # Enable all Intel specific extensions which only works on x86_64
+  enableIntelX86Extensions ? true
 }:
-pkgs.callPackage ./nixGL.nix {
+pkgs.callPackage ./nixGL.nix ({
   inherit
     nvidiaVersion
     nvidiaVersionFile
     nvidiaHash
     enable32bits
     ;
-}
+  } // (if enableIntelX86Extensions then {}
+  else {
+    intel-media-driver = null;
+    vaapiIntel = null;
+  }))
