@@ -68,7 +68,7 @@ let
           #!${runtimeShell}
           export LD_LIBRARY_PATH=${
             lib.makeLibraryPath [ nvidiaDrivers ]
-          }:$LD_LIBRARY_PATH
+          }"''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           ${
             bumblebee.override {
               nvidia_x11 = nvidiaDrivers;
@@ -95,18 +95,18 @@ let
             NVIDIA_JSON=(${nvidiaLibsOnly}/share/glvnd/egl_vendor.d/*nvidia.json)
             ${lib.optionalString enable32bits "NVIDIA_JSON32=(${nvidiaLibsOnly.lib32}/share/glvnd/egl_vendor.d/*nvidia.json)"}
 
-            ${''export __EGL_VENDOR_LIBRARY_FILENAMES="''${NVIDIA_JSON[*]}${
+            ${''export __EGL_VENDOR_LIBRARY_FILENAMES=''${NVIDIA_JSON[*]}${
               lib.optionalString enable32bits
               '':''${NVIDIA_JSON32[*]}''
-              }:$__EGL_VENDOR_LIBRARY_FILENAMES"''
+              }"''${__EGL_VENDOR_LIBRARY_FILENAMES:+:$__EGL_VENDOR_LIBRARY_FILENAMES}"''
             }
 
               ${
                 lib.optionalString (api == "Vulkan")
-                "export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd.json${
+                ''export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd.json${
                   lib.optionalString enable32bits
                   ":${nvidiaLibsOnly.lib32}/share/vulkan/icd.d/nvidia_icd.json"
-                }:$VK_ICD_FILENAMES"
+                }"''${VK_ICD_FILENAMES:+:$VK_ICD_FILENAMES}"''
               }
               export LD_LIBRARY_PATH=${
                 lib.makeLibraryPath ([ libglvnd nvidiaLibsOnly ]
@@ -115,7 +115,7 @@ let
                     nvidiaLibsOnly.lib32
                     pkgsi686Linux.libglvnd
                   ])
-              }:''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+              }"''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
               exec "$@"
           '';
         };
@@ -146,12 +146,12 @@ let
         #!${runtimeShell}
         export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" mesa-drivers}
         export LIBVA_DRIVERS_PATH=${lib.makeSearchPathOutput "out" "lib/dri" intel-driver}
-        ${"export __EGL_VENDOR_LIBRARY_FILENAMES=${mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json${
+        ${''export __EGL_VENDOR_LIBRARY_FILENAMES=${mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json${
           lib.optionalString enable32bits
           ":${pkgsi686Linux.mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json"
-          }:$__EGL_VENDOR_LIBRARY_FILENAMES"
+          }"''${__EGL_VENDOR_LIBRARY_FILENAMES:+:$__EGL_VENDOR_LIBRARY_FILENAMES}"''
         }
-        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libglvnd]}:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libglvnd]}"''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         exec "$@"
       '';
     };
@@ -178,7 +178,7 @@ let
         fi
         export VK_LAYER_PATH=${vulkan-validation-layers}/share/vulkan/explicit_layer.d
         ICDS=$(cat ${icd})
-        export VK_ICD_FILENAMES=$ICDS:$VK_ICD_FILENAMES
+        export VK_ICD_FILENAMES=$ICDS"''${VK_ICD_FILENAMES:+:$VK_ICD_FILENAMES}"
         export LD_LIBRARY_PATH=${
           lib.makeLibraryPath [
             zlib
@@ -189,7 +189,7 @@ let
             wayland
             gcc.cc
           ]
-        }:$LD_LIBRARY_PATH
+        }"''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         exec "$@"
       '';
     };
