@@ -103,7 +103,7 @@ let
 
               ${
                 lib.optionalString (api == "Vulkan")
-                ''export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd.json${
+                ''export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd.x86_64.json${
                   lib.optionalString enable32bits
                   ":${nvidiaLibsOnly.lib32}/share/vulkan/icd.d/nvidia_icd.json"
                 }"''${VK_ICD_FILENAMES:+:$VK_ICD_FILENAMES}"''
