@@ -7,7 +7,7 @@
   outputs = { self, nixpkgs, flake-utils }:
     (flake-utils.lib.eachDefaultSystem (system:
       let
-        isIntelX86Platform = if system == "x86_64-linux" then true else false;
+        isIntelX86Platform = system == "x86_64-linux";
         pkgs = import ./default.nix {
           pkgs = nixpkgs.legacyPackages.${system};
           enable32bits = isIntelX86Platform;
@@ -33,9 +33,7 @@
         # deprecated attributes for retro compatibility
         overlay = overlays.default;
         overlays.default = final: _:
-          let
-            isIntelX86Platform =
-              if final.system == "x86_64-linux" then true else false;
+          let isIntelX86Platform = final.system == "x86_64-linux";
           in {
             nixgl = import ./default.nix {
               pkgs = final;
