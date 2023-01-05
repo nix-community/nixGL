@@ -15,7 +15,7 @@ nvidiaVersionFile ? null,
 enable32bits ? true
 , writeTextFile, shellcheck, pcre, runCommand, linuxPackages
 , fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
-, mesa, libvdpau-va-gl, intel-media-driver, vaapiIntel, vaapiVdpau, pkgsi686Linux, driversi686Linux
+, mesa, libvdpau-va-gl, intel-media-driver, pkgsi686Linux, driversi686Linux
 , zlib, libdrm, xorg, wayland, gcc }:
 
 let
@@ -156,12 +156,9 @@ let
 
     nixGLMesa = writeNixGL "nixGLMesa" [  ];
 
-    nixGLMesaVdpau = writeNixGL "nixGLMesaVdpau" [ vaapiVdpau ];
-
     nixGLIntel = writeNixGL "nixGLIntel"
-      ([ intel-media-driver vaapiIntel ]
-       # Note: intel-media-driver is disabled for i686 until https://github.com/NixOS/nixpkgs/issues/140471 is fixed
-       ++ lib.optionals enable32bits [ /* pkgsi686Linux.intel-media-driver */ driversi686Linux.vaapiIntel ]);
+      ([ intel-media-driver ]
+       ++ lib.optionals enable32bits [ pkgsi686Linux.intel-media-driver ]);
 
     nixVulkanMesa = writeExecutable {
       name = "nixVulkanIntel";
