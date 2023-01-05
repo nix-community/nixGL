@@ -15,7 +15,7 @@ nvidiaVersionFile ? null,
 enable32bits ? true
 , writeTextFile, shellcheck, pcre, runCommand, linuxPackages
 , fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
-, mesa, libvdpau-va-gl, intel-media-driver, vaapiIntel, pkgsi686Linux, driversi686Linux
+, mesa, libvdpau-va-gl, intel-media-driver, vaapiIntel, vaapiVdpau, pkgsi686Linux, driversi686Linux
 , zlib, libdrm, xorg, wayland, gcc }:
 
 let
@@ -34,6 +34,32 @@ let
         do
           ls $i > /dev/null || (echo "File $i, referenced in $out/bin/${name} does not exists."; exit -1)
         done
+      '';
+    };
+
+    writeNixGL = name: vadrivers: writeExecutable {
+      inherit name;
+      # add the 32 bits drivers if needed
+      text = let
+        mesa-drivers = [ mesa.drivers ]
+          ++ lib.optional enable32bits pkgsi686Linux.mesa.drivers;
+        libvdpau = [ libvdpau-va-gl ]
+          ++ lib.optional enable32bits pkgsi686Linux.libvdpau-va-gl;
+        glxindirect = runCommand "mesa_glxindirect" { } (''
+          mkdir -p $out/lib
+          ln -s ${mesa.drivers}/lib/libGLX_mesa.so.0 $out/lib/libGLX_indirect.so.0
+        '');
+      in ''
+        #!${runtimeShell}
+        export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" mesa-drivers}
+        export LIBVA_DRIVERS_PATH=${lib.makeSearchPathOutput "out" "lib/dri" (mesa-drivers ++ vadrivers)}
+        ${''export __EGL_VENDOR_LIBRARY_FILENAMES=${mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json${
+          lib.optionalString enable32bits
+          ":${pkgsi686Linux.mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json"
+          }"''${__EGL_VENDOR_LIBRARY_FILENAMES:+:$__EGL_VENDOR_LIBRARY_FILENAMES}"''
+        }
+        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libglvnd]}"''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        exec "$@"
       '';
     };
   top = rec {
@@ -127,36 +153,17 @@ let
       nixVulkanNvidia = nixNvidiaWrapper "Vulkan";
     };
 
-    nixGLIntel = writeExecutable {
-      name = "nixGLIntel";
-      # add the 32 bits drivers if needed
-      text = let
-        mesa-drivers = [ mesa.drivers ]
-          ++ lib.optional enable32bits pkgsi686Linux.mesa.drivers;
-        intel-driver = [ intel-media-driver vaapiIntel ]
-          # Note: intel-media-driver is disabled for i686 until https://github.com/NixOS/nixpkgs/issues/140471 is fixed
-          ++ lib.optionals enable32bits [ /* pkgsi686Linux.intel-media-driver */ driversi686Linux.vaapiIntel ];
-        libvdpau = [ libvdpau-va-gl ]
-          ++ lib.optional enable32bits pkgsi686Linux.libvdpau-va-gl;
-        glxindirect = runCommand "mesa_glxindirect" { } (''
-          mkdir -p $out/lib
-          ln -s ${mesa.drivers}/lib/libGLX_mesa.so.0 $out/lib/libGLX_indirect.so.0
-        '');
-      in ''
-        #!${runtimeShell}
-        export LIBGL_DRIVERS_PATH=${lib.makeSearchPathOutput "lib" "lib/dri" mesa-drivers}
-        export LIBVA_DRIVERS_PATH=${lib.makeSearchPathOutput "out" "lib/dri" intel-driver}
-        ${''export __EGL_VENDOR_LIBRARY_FILENAMES=${mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json${
-          lib.optionalString enable32bits
-          ":${pkgsi686Linux.mesa.drivers}/share/glvnd/egl_vendor.d/50_mesa.json"
-          }"''${__EGL_VENDOR_LIBRARY_FILENAMES:+:$__EGL_VENDOR_LIBRARY_FILENAMES}"''
-        }
-        export LD_LIBRARY_PATH=${lib.makeLibraryPath mesa-drivers}:${lib.makeSearchPathOutput "lib" "lib/vdpau" libvdpau}:${glxindirect}/lib:${lib.makeLibraryPath [libglvnd]}"''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-        exec "$@"
-      '';
-    };
 
-    nixVulkanIntel = writeExecutable {
+    nixGLMesa = writeNixGL "nixGLMesa" [  ];
+
+    nixGLMesaVdpau = writeNixGL "nixGLMesaVdpau" [ vaapiVdpau ];
+
+    nixGLIntel = writeNixGL "nixGLIntel"
+      ([ intel-media-driver vaapiIntel ]
+       # Note: intel-media-driver is disabled for i686 until https://github.com/NixOS/nixpkgs/issues/140471 is fixed
+       ++ lib.optionals enable32bits [ /* pkgsi686Linux.intel-media-driver */ driversi686Linux.vaapiIntel ]);
+
+    nixVulkanMesa = writeExecutable {
       name = "nixVulkanIntel";
       text = let
         # generate a file with the listing of all the icd files
@@ -193,6 +200,8 @@ let
         exec "$@"
       '';
     };
+
+    nixVulkanIntel = nixVulkanMesa;
 
     nixGLCommon = nixGL:
       runCommand "nixGL" { } ''
