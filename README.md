@@ -74,6 +74,14 @@ You can also specify which wrapper to use instead of using the default auto dete
 nix run github:guibou/nixGL#nixGLIntel -- program
 ```
 
+### Install nixgl
+
+You can also install nixgl as a flake
+
+```bash
+nix profile install github:guibou/nixGL --impure
+```
+
 This will result in a lighter download and execution time. Also, this evaluation is pure.
 
 
