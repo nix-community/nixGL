@@ -162,7 +162,7 @@ let
   nixGLWrap = binary: drv: pkgs.symlinkJoin {
     name = "${drv.name}-nixglwrapped";
     paths = [ drv ];
-    buildInputs = [ pkgs.makeWrapper ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       # This will break if wrapProgram is ever changed, so fingers crossed
       makeShellWrapper() {
