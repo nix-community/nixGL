@@ -31,5 +31,4 @@ pkgs.callPackage ./nixGL.nix ({
   } // (if enableIntelX86Extensions then {}
   else {
     intel-media-driver = null;
-    vaapiIntel = null;
   }))
