@@ -4,7 +4,6 @@ import re
 import subprocess
 from subprocess import CalledProcessError
 import os
-import shutil
 
 CLEANUP=True
 
@@ -26,8 +25,6 @@ def process_output(o):
 
 if os.path.exists("driver-versions.nix"):
     print("driver-versions.nix already exists, parsing known versions to skip re-downloads.")
-    print("copying old versions to driver-versions.bak.nix.")
-    shutil.copyfile("driver-versions.nix", "driver-versions.bak.nix")
     known_versions = []
     old_version_lines = []
     with open("driver-versions.nix") as f:
@@ -62,8 +59,3 @@ with open("driver-versions.nix", "wt") as f:
                 print("Download Failed")
                 pass
     print("]", file=f)
-
-
-
-
-
