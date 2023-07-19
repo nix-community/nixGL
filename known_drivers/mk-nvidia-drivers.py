@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import re
 import subprocess
 from subprocess import CalledProcessError
+import os
+import shutil
 
 CLEANUP=True
 
@@ -22,26 +24,43 @@ def process_output(o):
 
     return (store_pth, store_hash)
 
+if os.path.exists("driver-versions.nix"):
+    print("driver-versions.nix already exists, parsing known versions to skip re-downloads.")
+    print("copying old versions to driver-versions.bak.nix.")
+    shutil.copyfile("driver-versions.nix", "driver-versions.bak.nix")
+    known_versions = []
+    old_version_lines = []
+    with open("driver-versions.nix") as f:
+          for line in f:
+            if line.startswith("{"):
+                version = re.search('version = "([^"]*)"', line).group(1)
+                known_versions.append(version)
+                old_version_lines.append(line)
+
 with open("driver-versions.nix", "wt") as f:
     print("[", file=f)
+    for line in old_version_lines:
+        print(line.strip(), file=f)
+
     for v in vers:
-        try: 
-            url = f"https://download.nvidia.com/XFree86/Linux-x86_64/{v}/NVIDIA-Linux-x86_64-{v}.run"
-            print(f"Trying download of {url}")
-            out = subprocess.check_output(["nix-prefetch-url", url], stderr = subprocess.STDOUT)
-            store_pth, store_hash = process_output(out)
-            if CLEANUP:
-                print(f"Attempting cleanup of {store_pth}")
-                try:
-                    subprocess.check_output(["nix-store", "--delete", store_pth])
-                    print("Cleanup success.")
-                except CalledProcessError:
-                    print("Cleanup failed.")
-                    pass
-            print(f'{{ version = "{v}"; sha256 = "{store_hash}"; }}', file=f)                  
-        except CalledProcessError:
-            print("Download Failed")
-            pass
+        if v not in known_versions: 
+            try: 
+                url = f"https://download.nvidia.com/XFree86/Linux-x86_64/{v}/NVIDIA-Linux-x86_64-{v}.run"
+                print(f"Trying download of {url}")
+                out = subprocess.check_output(["nix-prefetch-url", url], stderr = subprocess.STDOUT)
+                store_pth, store_hash = process_output(out)
+                if CLEANUP:
+                    print(f"Attempting cleanup of {store_pth}")
+                    try:
+                        subprocess.check_output(["nix-store", "--delete", store_pth])
+                        print("Cleanup success.")
+                    except CalledProcessError:
+                        print("Cleanup failed.")
+                        pass
+                    print(f'{{ version = "{v}"; sha256 = "{store_hash}"; }}', file=f)                  
+            except CalledProcessError:
+                print("Download Failed")
+                pass
     print("]", file=f)
 
 

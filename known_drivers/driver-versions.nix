@@ -310,4 +310,10 @@
 { version = "525.105.17"; sha256 = "0ahlb1x59g7055vdkm4lifb6llsb1x5bdsqrbx4576rc50da4df6"; }
 { version = "530.30.02"; sha256 = "0qvrvszbzhwh0k60di2hh3v4vigfa5znxknv4ccndfi2gayxpza7"; }
 { version = "530.41.03"; sha256 = "1cc4nyna0bifz4aywjjz08mn20hn7hsdl78nblzm11ccjrma29xf"; }
+{ version = "470.199.02"; sha256 = "1zb8swlb8f1l9l6bya64fwd12pk9z0x1lqj2bg1k5khivw721y7x"; }
+{ version = "525.116.03"; sha256 = "0s841nijj28637b6x2mszfrb88xn5qlsk6ypq2g9lbpcxc15naaw"; }
+{ version = "525.116.04"; sha256 = "1zhpnr7lq7xq3s8avf322qasad56x5z6bcqqbz5p5zvw8j1fq446"; }
+{ version = "525.125.06"; sha256 = "17av8nvxzn5af3x6y8vy5g6zbwg21s7sq5vpa1xc6cx8yj4mc9xm"; }
+{ version = "535.43.02"; sha256 = "10wrzhrb2hdllyzbd6kk9ajd8as6ss631vbrr13603h6i69xv970"; }
+{ version = "535.54.03"; sha256 = "10j0bgqcmhvdf9zikyrqciig0w8fw65zfw53cs8y3fd1gvsn8is5"; }
 ]
