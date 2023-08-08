@@ -316,4 +316,5 @@
 { version = "525.125.06"; sha256 = "17av8nvxzn5af3x6y8vy5g6zbwg21s7sq5vpa1xc6cx8yj4mc9xm"; }
 { version = "535.43.02"; sha256 = "10wrzhrb2hdllyzbd6kk9ajd8as6ss631vbrr13603h6i69xv970"; }
 { version = "535.54.03"; sha256 = "10j0bgqcmhvdf9zikyrqciig0w8fw65zfw53cs8y3fd1gvsn8is5"; }
+{ version = "535.86.05"; sha256 = "1nzn7ai73hn9p8bkh0ymrsyc7zr4n6waabf6iy2vsbk36v5g0za0"; }
 ]
