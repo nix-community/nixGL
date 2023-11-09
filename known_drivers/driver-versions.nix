@@ -320,4 +320,9 @@
 { version = "535.98"; sha256 = "1hsf0pyjp8bi60cskngn2vyl82q57fp3d3k01pwy4yykaacw0l0k"; }
 { version = "535.104.05"; sha256 = "1jgdrczy70jlg9ybi1z8mm9q5vg78rf66dknfppbww573nfn179g"; }
 { version = "535.113.01"; sha256 = "10bl2qiqy3haqzij4xfrg1as7z32ikrlnh30kxg7y6z8vzc09qr8"; }
+{ version = "470.223.02"; sha256 = "1y249mn3yss0mq2ixyqxiwjxm0xihpwb8fpcx3mydhvc6gan4s5k"; }
+{ version = "525.147.05"; sha256 = "1wgyyd53s1ivxccyazpyprlk72km0zd8cyad0kii4zjwakm86la3"; }
+{ version = "535.129.03"; sha256 = "0bh0zwka3f4vq05djz8sjsg8ncxgq6vzqv045axwc216d9iabp76"; }
+{ version = "545.23.06"; sha256 = "0bq8m7mnbqyq0wvm6ikanhz7frbs00cd193q52pz4wlz04ld6fa1"; }
+{ version = "545.29.02"; sha256 = "11dqrarp8k12by0ba8n22dyw0wqksbamkcr3a12z11m3ljahyxs6"; }
 ]
