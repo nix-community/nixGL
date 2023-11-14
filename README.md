@@ -76,7 +76,7 @@ nix run github:guibou/nixGL#nixGLIntel -- program
 
 ### Install nixgl
 
-You can also install nixgl as a flake
+You can also install nixgl in a nix profile
 
 ```bash
 nix profile install github:guibou/nixGL --impure
