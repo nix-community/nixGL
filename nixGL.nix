@@ -16,7 +16,7 @@ enable32bits ? true
 , writeTextFile, shellcheck, pcre, runCommand, linuxPackages
 , fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
 , mesa, libvdpau-va-gl, intel-media-driver, pkgsi686Linux, driversi686Linux
-, zlib, libdrm, xorg, wayland, gcc }:
+, zlib, libdrm, xorg, wayland, gcc, zstd }:
 
 let
   writeExecutable = { name, text }:
@@ -81,6 +81,7 @@ let
           else
             builtins.fetchurl url;
           useGLVND = true;
+          nativeBuildInputs = oldAttrs.buildInputs ++ [zstd];
         });
 
       nvidiaLibsOnly = nvidiaDrivers.override {
