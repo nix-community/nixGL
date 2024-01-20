@@ -32,7 +32,7 @@ $ nixVulkan program
 To get started,
 
 ```bash
-$ nix-channel --add https://github.com/guibou/nixGL/archive/main.tar.gz nixgl && nix-channel --update
+$ nix-channel --add https://github.com/nix-community/nixGL/archive/main.tar.gz nixgl && nix-channel --update
 $ nix-env -iA nixgl.auto.nixGLDefault   # or replace `nixGLDefault` with your desired wrapper
 ```
 
@@ -59,19 +59,19 @@ The Vulkan wrapper also sets `VK_LAYER_PATH` the validation layers in the nix st
 You need to specify the same version of `nixpkgs` that your `program` is using. For example, replace `nixos-21.11` with `nixos-21.05`.
 
 ```sh
-nix run --override-input nixpkgs nixpkgs/nixos-21.11 --impure github:guibou/nixGL -- program
+nix run --override-input nixpkgs nixpkgs/nixos-21.11 --impure github:nix-community/nixGL -- program
 ```
 
 If you use the default `nixpkgs` channel (i.e. `nixpkgs-unstable`), you can ommit those arguments like so:
 
 ```sh
-nix run --impure github:guibou/nixGL -- program
+nix run --impure github:nix-community/nixGL -- program
 ```
 
 You can also specify which wrapper to use instead of using the default auto detection:
 
 ```sh
-nix run github:guibou/nixGL#nixGLIntel -- program
+nix run github:nix-community/nixGL#nixGLIntel -- program
 ```
 
 This will result in a lighter download and execution time. Also, this evaluation is pure.
@@ -82,7 +82,7 @@ This will result in a lighter download and execution time. Also, this evaluation
 You can directly use:
 
 ```sh
-nix --extra-experimental-features "nix-command flakes" run --impure github:guibou/nixGL -- program
+nix --extra-experimental-features "nix-command flakes" run --impure github:nix-community/nixGL -- program
 ```
 
 Or set the appropriate conf in `~/.config/nix/nix.conf` / `/etc/nix/nix.conf` / `nix.extraOptions`.
@@ -104,7 +104,7 @@ Add nixGL as a flake input:
 ```Nix
 {
   inputs = {
-    nixgl.url = "github:guibou/nixGL";
+    nixgl.url = "github:nix-community/nixGL";
   };
   outputs = { nixgl, ... }: { };
 }
@@ -129,7 +129,7 @@ Then, use the flake's `overlay` attr:
 ## Installation from source
 
 ```bash
-$ git clone https://github.com/guibou/nixGL
+$ git clone https://github.com/nix-community/nixGL
 $ cd nixGL
 $ nix-env -f ./ -iA <your desired wrapper name>
 ```
