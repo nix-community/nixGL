@@ -62,7 +62,7 @@ You need to specify the same version of `nixpkgs` that your `program` is using. 
 nix run --override-input nixpkgs nixpkgs/nixos-21.11 --impure github:guibou/nixGL -- program
 ```
 
-If you use the default `nixpkgs` channel (i.e. `nixpkgs-unstable`), you can ommit those arguments like so:
+If you use the default `nixpkgs` channel (i.e. `nixpkgs-unstable`), you can omit those arguments like so:
 
 ```sh
 nix run --impure github:guibou/nixGL -- program
