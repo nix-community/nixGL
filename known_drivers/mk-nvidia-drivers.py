@@ -1,3 +1,6 @@
+#!/usr/bin/env nix-shell
+#! nix-shell -i python3 -p "python3.withPackages (ps: [ ps.beautifulsoup4 ps.requests ])"
+
 import requests
 from bs4 import BeautifulSoup
 import re
