@@ -81,7 +81,7 @@ let
           else
             builtins.fetchurl url;
           useGLVND = true;
-          nativeBuildInputs = oldAttrs.buildInputs ++ [zstd];
+          nativeBuildInputs = oldAttrs.buildInputs or [] ++ [zstd];
         });
 
       nvidiaLibsOnly = nvidiaDrivers.override {
