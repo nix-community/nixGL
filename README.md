@@ -160,7 +160,46 @@ For Vulkan programs:
 ```bash
 $ nixVulkanNvidia program args
 $ nixVulkanIntel program args
+
+## Wrapping applications
+If you are using home-manager, you can use this approach to avoid having to add the wrapper call
+each time:
+
+```nix
+let
+  nixGLWrap = binary: drv: pkgs.symlinkJoin {
+    name = "${drv.name}-nixglwrapped";
+    paths = [ drv ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      # This will break if wrapProgram is ever changed, so fingers crossed
+      makeShellWrapper() {
+        local original="$1"
+        local wrapper="$2"
+        cat << EOF > "$wrapper"
+      #! ${pkgs.bash}/bin/bash -e
+      exec "${pkgs.nixgl.auto.nixGLDefault}/bin/nixGL" "$original"
+      EOF
+        chmod +x "$wrapper"
+      }
+
+      wrapProgram "$out/bin/${binary}"
+    '';
+  };
+in {
+  home.packages = [
+    (nixGLWrap "glxinfo" glxinfo)
+  ];
+}
 ```
+
+This generates a wrapper script that automatically adds the `nixGL` call so you won't have to
+remember it.
+
+This could be done simpler with
+    `writeShellScriptBin "glxinfo" "${..}/bin/nixGL ${glxinfo}/bin/glxinfo"`
+but this way, only the binary will be available in your environment and you'll [lose manpages and
+possibly important supporting files](https://nixos.wiki/wiki/Nix_Cookbook#Wrapping_packages).
 
 # OpenGL - Hybrid Intel + Nvidia laptop
 
