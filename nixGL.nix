@@ -209,7 +209,9 @@ let
       '';
 
     auto = let
-      _nvidiaVersionFile = if nvidiaVersionFile != null then
+      _nvidiaVersionFile = if nvidiaVersionFile != null || nvidiaVersion != null then
+        # In the case nvidiaVersion is not null, nvidiaVersionFile is not used
+        # so we can set _nvidiaVersionFile == nvidiaVersionFile == null
         nvidiaVersionFile
       else
       # HACK: Get the version from /proc. It turns out that /proc is mounted
@@ -236,7 +238,7 @@ let
           versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
         in if versionMatch != null then builtins.head versionMatch else null;
 
-      autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; };
+      autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; sha256 = nvidiaHash;};
     in rec {
       # The output derivation contains nixGL which point either to
       # nixGLNvidia or nixGLIntel using an heuristic.
