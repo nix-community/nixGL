@@ -208,6 +208,8 @@ let
         cp ${nixGL}/bin/* "$out/bin/nixGL";
       '';
 
+    knownNvidiaDrivers = import ./known_drivers/driver-versions.nix;
+
     auto = let
       _nvidiaVersionFile = if nvidiaVersionFile != null then
         nvidiaVersionFile
