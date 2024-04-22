@@ -236,7 +236,10 @@ let
           versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
         in if versionMatch != null then builtins.head versionMatch else null;
 
-      autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; };
+      autoNvidia = nvidiaPackages {
+        version = nvidiaVersionAuto;
+        sha256 = nvidiaHash;
+      };
     in rec {
       # The output derivation contains nixGL which point either to
       # nixGLNvidia or nixGLIntel using an heuristic.
@@ -246,10 +249,5 @@ let
         nixGLCommon nixGLIntel;
     } // autoNvidia;
   };
-in top // (if nvidiaVersion != null then
-  top.nvidiaPackages {
-    version = nvidiaVersion;
-    sha256 = nvidiaHash;
-  }
-else
-  { })
+in top // lib.optionalAttrs (nvidiaVersion != null)
+(builtins.removeAttrs top.auto [ "nixGLDefault" ])
