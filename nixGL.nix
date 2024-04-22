@@ -236,7 +236,10 @@ let
           versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
         in if versionMatch != null then builtins.head versionMatch else null;
 
-      autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; };
+      autoNvidia = nvidiaPackages {
+        version = nvidiaVersionAuto;
+        sha256 = nvidiaHash;
+      };
     in rec {
       # The output derivation contains nixGL which point either to
       # nixGLNvidia or nixGLIntel using an heuristic.
