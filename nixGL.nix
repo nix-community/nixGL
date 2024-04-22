@@ -249,10 +249,5 @@ let
         nixGLCommon nixGLIntel;
     } // autoNvidia;
   };
-in top // (if nvidiaVersion != null then
-  top.nvidiaPackages {
-    version = nvidiaVersion;
-    sha256 = nvidiaHash;
-  }
-else
-  { })
+in top // lib.optionalAttrs (nvidiaVersion != null)
+(builtins.removeAttrs top.auto [ "nixGLDefault" ])
