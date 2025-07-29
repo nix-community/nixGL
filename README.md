@@ -1,6 +1,6 @@
 # NixGL
 
-NixGL solve the "OpenGL" problem with [nix](https://nixos.org/nix/). It works with all mesa drivers (Intel cards and "free" version for Nvidia or AMD cards), Nvidia proprietary drivers, and even with hybrid configuration via bumblebee. It works for Vulkan programs too.
+NixGL solves the "OpenGL" problem with [nix](https://nixos.org/nix/). It works with all mesa drivers (Intel cards and "free" drivers for Nvidia or AMD cards), Nvidia proprietary drivers, and even with hybrid configurations via bumblebee. It works for Vulkan programs too.
 
 # Motivation
 
