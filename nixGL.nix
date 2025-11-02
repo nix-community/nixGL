@@ -243,8 +243,10 @@ let
       # nixGLNvidia or nixGLIntel using an heuristic.
       nixGLDefault = if nvidiaVersionAuto != null then
         nixGLCommon autoNvidia.nixGLNvidia
+      else if stdenv.hostPlatform.isx86 then
+        nixGLCommon nixGLIntel
       else
-        nixGLCommon nixGLIntel;
+        nixGLCommon nixGLMesa;
     } // autoNvidia;
   };
 in top // (if nvidiaVersion != null then
