@@ -128,6 +128,7 @@ let
               '':''${NVIDIA_JSON32[*]}''
               }"''${__EGL_VENDOR_LIBRARY_FILENAMES:+:$__EGL_VENDOR_LIBRARY_FILENAMES}"''
             }
+            export GBM_BACKENDS_PATH=${lib.makeSearchPathOutput "lib" "lib/gbm" [ nvidiaLibsOnly ]}
 
               ${
                 lib.optionalString (api == "Vulkan")
