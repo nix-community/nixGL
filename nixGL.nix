@@ -19,6 +19,7 @@ enable32bits ? stdenv.hostPlatform.isx86
 , zlib, libdrm, xorg, wayland, gcc, zstd }:
 
 let
+  toAvailableVersion = import ./nvidiaVersions.nix { inherit lib; };
   writeExecutable = { name, text }:
     writeTextFile {
       inherit name text;
@@ -68,15 +69,17 @@ let
     It contains the builder for different nvidia configuration, parametrized by
     the version of the driver and sha256 sum of the driver installer file.
     */
-    nvidiaPackages = { version, sha256 ? null }: rec {
+    nvidiaPackages = { version, sha256 ? null, strict ? false }:
+      let matchedVersion = if strict then version else toAvailableVersion version;
+      in rec {
       nvidiaDrivers = (linuxPackages.nvidia_x11.override { }).overrideAttrs
         (oldAttrs: rec {
           pname = "nvidia";
-          name = "nvidia-x11-${version}-nixGL";
-          inherit version;
+          name = "nvidia-x11-${matchedVersion}-nixGL";
+          version = matchedVersion;
           src = let
             url =
-              "https://download.nvidia.com/XFree86/Linux-x86_64/${version}/NVIDIA-Linux-x86_64-${version}.run";
+              "https://download.nvidia.com/XFree86/Linux-x86_64/${matchedVersion}/NVIDIA-Linux-x86_64-${matchedVersion}.run";
           in if sha256 != null then
             fetchurl { inherit url sha256; }
           else
@@ -91,7 +94,7 @@ let
       };
 
       nixGLNvidiaBumblebee = writeExecutable {
-        name = "nixGLNvidiaBumblebee-${version}";
+        name = "nixGLNvidiaBumblebee-${matchedVersion}";
         text = ''
           #!${runtimeShell}
           export LD_LIBRARY_PATH=${
@@ -115,7 +118,7 @@ let
       # TODO: 32bit version? Not tested.
       nixNvidiaWrapper = api:
         writeExecutable {
-          name = "nix${api}Nvidia-${version}";
+          name = "nix${api}Nvidia-${matchedVersion}";
           text = ''
             #!${runtimeShell}
             ${lib.optionalString (api == "Vulkan")
