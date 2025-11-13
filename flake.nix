@@ -33,7 +33,7 @@
         # deprecated attributes for retro compatibility
         overlay = overlays.default;
         overlays.default = final: _:
-          let isIntelX86Platform = final.system == "x86_64-linux";
+          let isIntelX86Platform = final.stdenv.hostPlatform.system == "x86_64-linux";
           in {
             nixgl = import ./default.nix {
               pkgs = final;
