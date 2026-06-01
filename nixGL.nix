@@ -87,7 +87,6 @@ let
 
       nvidiaLibsOnly = nvidiaDrivers.override {
         libsOnly = true;
-        kernel = null;
       };
 
       nixGLNvidiaBumblebee = writeExecutable {
@@ -131,10 +130,14 @@ let
 
               ${
                 lib.optionalString (api == "Vulkan")
-                ''export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd.x86_64.json${
-                  lib.optionalString enable32bits
-                  ":${nvidiaLibsOnly.lib32}/share/vulkan/icd.d/nvidia_icd.i686.json"
-                }"''${VK_ICD_FILENAMES:+:$VK_ICD_FILENAMES}"''
+                ''
+                  NVIDIA_ICD=(${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd*.json)
+                  ${lib.optionalString enable32bits "NVIDIA_ICD32=(${nvidiaLibsOnly.lib32}/share/vulkan/icd.d/nvidia_icd*.json)"}
+                  export VK_ICD_FILENAMES=''${NVIDIA_ICD[*]}${
+                    lib.optionalString enable32bits
+                    '':''${NVIDIA_ICD32[*]}''
+                  }"''${VK_ICD_FILENAMES:+:$VK_ICD_FILENAMES}"
+                ''
               }
               export LD_LIBRARY_PATH=${
                 lib.makeLibraryPath ([ libglvnd nvidiaLibsOnly ]
@@ -234,8 +237,10 @@ let
       # Get if from the nvidiaVersionFile
         let
           data = builtins.readFile _nvidiaVersionFile;
-          versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
-        in if versionMatch != null then builtins.head versionMatch else null;
+          # Match version after "Module", "x86_64", or "aarch64" with flexible whitespace
+          # This supports both old format (Module  VERSION) and new format (x86_64  VERSION)
+          versionMatch = builtins.match ".*(Module|x86_64|aarch64)  +([0-9.]+)  +.*" data;
+        in if versionMatch != null then builtins.elemAt versionMatch 1 else null;
 
       autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; };
     in rec {

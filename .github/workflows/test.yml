@@ -1,18 +1,18 @@
 name: Test
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
   test:
-    name: 'Test'
+    name: "Test"
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2.4.2
-    - uses: cachix/install-nix-action@v20
-    - uses: cachix/cachix-action@v12
-      with:
-        name: guibou
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - name: Build all
-      run: nix-build all.nix
+      - uses: actions/checkout@v2.4.2
+      - uses: cachix/install-nix-action@v31
+      - uses: cachix/cachix-action@v12
+        with:
+          name: guibou
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+      - name: Build all
+        run: nix-build all.nix
