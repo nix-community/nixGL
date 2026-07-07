@@ -13,6 +13,7 @@
           enable32bits = isIntelX86Platform;
           enableIntelX86Extensions = isIntelX86Platform;
         };
+
       in rec {
 
         packages = {
@@ -39,6 +40,8 @@
               pkgs = final;
               enable32bits = isIntelX86Platform;
               enableIntelX86Extensions = isIntelX86Platform;
+            } // {
+              nixGLDynamic = final.callPackage ./dynamicWrapper.nix {};
             };
           };
       };
