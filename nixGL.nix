@@ -13,7 +13,7 @@ nvidiaVersionFile ? null,
 # This is one by default, you can switch it to off if you want to reduce a
 # bit the size of nixGL closure.
 enable32bits ? stdenv.hostPlatform.isx86
-, stdenv, writeTextFile, shellcheck, pcre, runCommand, linuxPackages
+, stdenv, writeTextFile, shellcheck, pcre2, runCommand, linuxPackages
 , fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
 , mesa, libvdpau-va-gl, intel-media-driver, pkgsi686Linux, driversi686Linux
 , zlib, libdrm, xorg, wayland, gcc, zstd }:
@@ -30,7 +30,7 @@ let
         ${shellcheck}/bin/shellcheck "$out/bin/${name}"
 
         # Check that all the files listed in the output binary exists
-        for i in $(${pcre}/bin/pcregrep  -o0 '/nix/store/.*?/[^ ":]+' $out/bin/${name})
+        for i in $(${pcre2.bin}/bin/pcre2grep  -o0 '/nix/store/.*?/[^ ":]+' $out/bin/${name})
         do
           ls $i > /dev/null || (echo "File $i, referenced in $out/bin/${name} does not exists."; exit -1)
         done
