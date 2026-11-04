@@ -79,7 +79,7 @@ nix run github:nix-community/nixGL#nixGLIntel -- program
 You can also install nixgl in a nix profile
 
 ```bash
-nix profile install github:guibou/nixGL --impure
+nix profile install github:nix-community/nixGL --impure
 ```
 
 This will result in a lighter download and execution time. Also, this evaluation is pure.

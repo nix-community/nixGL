@@ -16,7 +16,7 @@ enable32bits ? stdenv.hostPlatform.isx86
 , stdenv, writeTextFile, shellcheck, pcre2, runCommand, linuxPackages
 , fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
 , mesa, libvdpau-va-gl, intel-media-driver, pkgsi686Linux, driversi686Linux
-, zlib, libdrm, xorg, wayland, gcc, zstd }:
+, zlib, libdrm, libx11, libxcb, libxshmfence, wayland, gcc, zstd }:
 
 let
   writeExecutable = { name, text }:
@@ -83,11 +83,22 @@ let
             builtins.fetchurl url;
           useGLVND = true;
           nativeBuildInputs = oldAttrs.nativeBuildInputs or [] ++ [zstd];
+          # Some driver releases (e.g. 510.54) ship both
+          # `libnvidia-compiler.so.<v>` and `libnvidia-compiler-next.so.<v>`,
+          # where the `-next` variant's SONAME equals the regular variant's
+          # filename.
+          # nixpkgs' nvidia-x11 installPhase then fails to
+          # `ln -s libnvidia-compiler-next.so.<v> libnvidia-compiler.so.<v>`
+          # because that path is already a real file. Therefore, drop
+          # redundant `-next` libraries (its SONAME points to the regular one
+          # anyway) so the symlink step has nothing to collide with.
+          postUnpack = (oldAttrs.postUnpack or "") + ''
+            rm -f libnvidia-compiler-next.so.*
+          '';
         });
 
       nvidiaLibsOnly = nvidiaDrivers.override {
         libsOnly = true;
-        kernel = null;
       };
 
       nixGLNvidiaBumblebee = writeExecutable {
@@ -131,10 +142,12 @@ let
 
               ${
                 lib.optionalString (api == "Vulkan")
-                ''export VK_ICD_FILENAMES=${nvidiaLibsOnly}/share/vulkan/icd.d/nvidia_icd.x86_64.json${
+                ''NVIDIA_ICD=(${nvidiaLibsOnly}/share/vulkan/icd.d/*.json${
                   lib.optionalString enable32bits
-                  ":${nvidiaLibsOnly.lib32}/share/vulkan/icd.d/nvidia_icd.i686.json"
-                }"''${VK_ICD_FILENAMES:+:$VK_ICD_FILENAMES}"''
+                  " ${nvidiaLibsOnly.lib32}/share/vulkan/icd.d/*.json"
+                })
+                NVIDIA_ICD_FILENAMES=$(IFS=:; echo "''${NVIDIA_ICD[*]}")
+                export VK_ICD_FILENAMES="''${NVIDIA_ICD_FILENAMES}''${VK_ICD_FILENAMES:+:$VK_ICD_FILENAMES}"''
               }
               export LD_LIBRARY_PATH=${
                 lib.makeLibraryPath ([ libglvnd nvidiaLibsOnly ]
@@ -189,9 +202,9 @@ let
           lib.makeLibraryPath [
             zlib
             libdrm
-            xorg.libX11
-            xorg.libxcb
-            xorg.libxshmfence
+            libx11
+            libxcb
+            libxshmfence
             wayland
             gcc.cc
           ]
@@ -234,7 +247,7 @@ let
       # Get if from the nvidiaVersionFile
         let
           data = builtins.readFile _nvidiaVersionFile;
-          versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
+          versionMatch = builtins.elemAt (builtins.split "[[:space:]]+([0-9]+[.][0-9.]+)[[:space:]]+" data) 1;
         in if versionMatch != null then builtins.head versionMatch else null;
 
       autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; };
