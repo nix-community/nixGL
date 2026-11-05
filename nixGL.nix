@@ -9,6 +9,20 @@ nvidiaHash ? null,
 # /proc/driver/nvidia/version. Nix doesn't like zero-sized files (see
 # https://github.com/NixOS/nix/issues/3539 ).
 nvidiaVersionFile ? null,
+# Nvidia driver source selection:
+#   "driver" (default) - download the .run installer from NVIDIA's XFree86 site.
+#   "rhel"             - extract the libraries from the RPMs in NVIDIA's RHEL CUDA repo.
+# Why "rhel" is needed: on RHEL-family distros (RHEL, Rocky, AlmaLinux, CentOS
+# Stream) the driver is installed from NVIDIA's RHEL repository, and many of those
+# versions are never published as a standalone .run installer on the XFree86
+# site. The two channels carry different sets of version numbers. Since nixGL
+# auto-detects the *installed* version, the default "driver" source frequently
+# 404s for it. Pulling from the same RHEL repo that supplied the running driver
+# guarantees the exact version is available.
+driverSource ? "driver",
+# RHEL major version (e.g. 9 or 10) used to build the NVIDIA RPM URLs. Only used
+# when driverSource = "rhel"; set it to match your distribution.
+rhelMajorVersion ? 10,
 # Enable 32 bits driver
 # This is one by default, you can switch it to off if you want to reduce a
 # bit the size of nixGL closure.
@@ -16,7 +30,12 @@ enable32bits ? stdenv.hostPlatform.isx86
 , stdenv, writeTextFile, shellcheck, pcre2, runCommand, linuxPackages
 , fetchurl, lib, runtimeShell, bumblebee, libglvnd, vulkan-validation-layers
 , mesa, libvdpau-va-gl, intel-media-driver, pkgsi686Linux, driversi686Linux
-, zlib, libdrm, xorg, wayland, gcc, zstd }:
+, zlib, libdrm, xorg, wayland, gcc, zstd, rpm, cpio }:
+
+# The "rhel" source only ships 64-bit libraries (no lib32 output), so fail fast
+# with a clear message rather than a confusing missing-attribute error later.
+assert lib.assertMsg (!(driverSource == "rhel" && enable32bits))
+  ''nixGL: driverSource = "rhel" provides 64-bit libraries only; set enable32bits = false when using it.'';
 
 let
   writeExecutable = { name, text }:
@@ -69,7 +88,69 @@ let
     the version of the driver and sha256 sum of the driver installer file.
     */
     nvidiaPackages = { version, sha256 ? null }: rec {
-      nvidiaDrivers = (linuxPackages.nvidia_x11.override { }).overrideAttrs
+      # Build a URL for a package in NVIDIA's RHEL CUDA repo.
+      rpmUrl = pkg:
+        "https://developer.download.nvidia.com/compute/cuda/repos/rhel${toString rhelMajorVersion}/x86_64/${pkg}-${version}-1.el${toString rhelMajorVersion}.x86_64.rpm";
+
+      # NVIDIA reorganized the CUDA-repo driver packaging with the 610 branch: the
+      # standalone `libnvidia-ml` RPM (shipped for 580..595) was dropped, and
+      # libnvidia-ml.so moved into the new `nvidia-driver-common` package. Pick
+      # whichever package provides NVML for the detected driver branch.
+      driverBranch = lib.toInt (lib.versions.major version);
+      mlPackage =
+        if driverBranch >= 610 then "nvidia-driver-common" else "libnvidia-ml";
+
+      # Download the GL/EGL/GLX libraries when RHEL is the driver source.
+      rpmLibs = if driverSource == "rhel" then
+        builtins.fetchurl { url = rpmUrl "nvidia-driver-libs"; }
+      else
+        null;
+
+      # Also download the NVML library (libnvidia-ml.so), required by tools like
+      # btop. Its providing package depends on the driver branch (see mlPackage).
+      rpmMl = if driverSource == "rhel" then
+        builtins.fetchurl { url = rpmUrl mlPackage; }
+      else
+        null;
+
+      # Extract the NVIDIA shared libraries from the RPMs.
+      nvidiaFromRpm = stdenv.mkDerivation {
+        pname = "nvidia";
+        name = "nvidia-${version}-nixGL-rpm";
+        inherit version;
+        preferLocalBuild = true;
+        allowSubstitutes = false;
+        # $out is populated entirely in buildPhase; there is no Makefile to install.
+        dontInstall = true;
+        nativeBuildInputs = [ rpm cpio ];
+        srcs = [ rpmLibs rpmMl ];
+        unpackPhase = ''
+          mkdir -p $TMPDIR
+          cp ${rpmLibs} $TMPDIR/nvidia-driver-libs.rpm
+          cp ${rpmMl} $TMPDIR/nvidia-ml.rpm
+        '';
+        buildPhase = ''
+          mkdir -p $out $out/lib $out/share
+          cd $TMPDIR
+
+          rpm2cpio nvidia-driver-libs.rpm | cpio -idmv
+          mv usr/lib64/* $out/lib
+          mv usr/share/* $out/share
+
+          # The NVML package (libnvidia-ml or nvidia-driver-common depending on
+          # the driver branch) only ships libraries under usr/lib64.
+          rpm2cpio nvidia-ml.rpm | cpio -idmv
+          mv usr/lib64/* $out/lib
+        '';
+      };
+
+      nvidiaDrivers = if driverSource == "rhel" then
+        # Evaluated lazily: only forced if a consumer that needs the full driver
+        # (e.g. the Bumblebee wrapper) is built. The RPM path provides libraries
+        # only, with no kernel-module driver, so those wrappers are unsupported.
+        throw ''nixGL: driverSource = "rhel" provides prebuilt libraries only and has no kernel-module driver, so nixGLNvidiaBumblebee is unavailable; use nixGLNvidia or nixVulkanNvidia instead.''
+      else
+        (linuxPackages.nvidia_x11.override { }).overrideAttrs
         (oldAttrs: rec {
           pname = "nvidia";
           name = "nvidia-x11-${version}-nixGL";
@@ -85,10 +166,13 @@ let
           nativeBuildInputs = oldAttrs.nativeBuildInputs or [] ++ [zstd];
         });
 
-      nvidiaLibsOnly = nvidiaDrivers.override {
-        libsOnly = true;
-        kernel = null;
-      };
+      nvidiaLibsOnly = if driverSource == "rhel" then
+        nvidiaFromRpm
+      else
+        nvidiaDrivers.override {
+          libsOnly = true;
+          kernel = null;
+        };
 
       nixGLNvidiaBumblebee = writeExecutable {
         name = "nixGLNvidiaBumblebee-${version}";
@@ -234,8 +318,10 @@ let
       # Get if from the nvidiaVersionFile
         let
           data = builtins.readFile _nvidiaVersionFile;
-          versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
-        in if versionMatch != null then builtins.head versionMatch else null;
+          # Matches both the proprietary ("Kernel Module  X.Y.Z") and the open
+          # ("Open Kernel Module for x86_64  X.Y.Z") kernel module strings.
+          versionMatch = builtins.match ".*Module( for [^ ]+)?  ([0-9.]+)  .*" data;
+        in if versionMatch != null then builtins.elemAt versionMatch 1 else null;
 
       autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; };
     in rec {

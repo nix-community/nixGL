@@ -134,6 +134,36 @@ Then, use the flake's `overlay` attr:
 }
 ```
 
+### Install from RHEL repository (RHEL, Rocky, AlmaLinux, CentOS Stream)
+
+On RHEL-based distros the NVIDIA driver is installed from NVIDIA's official driver repositories, and the exact installed version is rarely (if ever) published as a `.run` file on the driver download site. Trying to fetch it from there typically fails with a 404. To guarantee a version match, nixGL can instead extract the driver libraries from the official `.rpm` packages in NVIDIA's RHEL CUDA repository.
+
+To do so, set `driverSource` to `rhel`. Also set `enable32bits` to `false`, as no 32-bit driver is included, and set `rhelMajorVersion` to match your distribution (e.g. `9` or `10`); it selects the `rhelN`/`elN` repository path. Here's an example flake using the nixGL overlay with `home-manager`:
+
+```nix
+{
+  home.packages = with pkgs; [
+    (nixgl.override {
+      driverSource = "rhel";
+      enable32bits = false;
+      rhelMajorVersion = 10;
+    }).auto.nixGLDefault
+    (config.lib.nixGL.wrap ghostty)
+  ];
+
+  nixGL = {
+   packages = pkgs.nixgl.override {
+    driverSource = "rhel";
+    enable32bits = false;
+    rhelMajorVersion = 10;
+   };
+   defaultWrapper = "nvidia";
+  };
+};
+```
+
+NVIDIA occasionally reorganizes how the driver is split across RPMs. nixGL pulls the GL/EGL/GLX libraries from `nvidia-driver-libs` and the NVML library (`libnvidia-ml.so`, needed by tools like `btop`) from a second package. Up to the 595 branch that package is the standalone `libnvidia-ml`; starting with the 610 branch NVIDIA dropped it and moved NVML into `nvidia-driver-common`, so nixGL selects the right one automatically based on your detected driver branch. If a future branch reshuffles packaging again, the `mlPackage` selection in `nixGL.nix` is where to adjust it.
+
 ## Installation from source
 
 ```bash
