@@ -234,7 +234,9 @@ let
       # Get if from the nvidiaVersionFile
         let
           data = builtins.readFile _nvidiaVersionFile;
-          versionMatch = builtins.match ".*Module  ([0-9.]+)  .*" data;
+          # The old format: "...Kernel Module  595.71.05  Release..."
+          # The open kernel module format: "...for x86_64  595.71.05  Release..."
+          versionMatch = builtins.match ".* ([0-9.]+)  Release .*" data;
         in if versionMatch != null then builtins.head versionMatch else null;
 
       autoNvidia = nvidiaPackages {version = nvidiaVersionAuto; };
