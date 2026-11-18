@@ -9,6 +9,7 @@ nvidiaHash ? null,
 # /proc/driver/nvidia/version. Nix doesn't like zero-sized files (see
 # https://github.com/NixOS/nix/issues/3539 ).
 nvidiaVersionFile ? null,
+known_url ? null,
 # Enable 32 bits driver
 # This is one by default, you can switch it to off if you want to reduce a
 # bit the size of nixGL closure.
@@ -68,15 +69,17 @@ let
     It contains the builder for different nvidia configuration, parametrized by
     the version of the driver and sha256 sum of the driver installer file.
     */
-    nvidiaPackages = { version, sha256 ? null }: rec {
+    nvidiaPackages = { version, sha256 ? null, known_url ? null}: rec {
       nvidiaDrivers = (linuxPackages.nvidia_x11.override { }).overrideAttrs
         (oldAttrs: rec {
           pname = "nvidia";
           name = "nvidia-x11-${version}-nixGL";
           inherit version;
           src = let
-            url =
-              "https://download.nvidia.com/XFree86/Linux-x86_64/${version}/NVIDIA-Linux-x86_64-${version}.run";
+            url = if known_url == null then
+              "https://download.nvidia.com/XFree86/Linux-x86_64/${version}/NVIDIA-Linux-x86_64-${version}.run"
+                  else
+              known_url;
           in if sha256 != null then
             fetchurl { inherit url sha256; }
           else
@@ -209,6 +212,8 @@ let
         cp ${nixGL}/bin/* "$out/bin/nixGL";
       '';
 
+    knownNvidiaDrivers = builtins.fromJSON (builtins.readFile ./known_drivers/driver-versions.json);
+
     auto = let
       _nvidiaVersionFile = if nvidiaVersionFile != null then
         nvidiaVersionFile
@@ -251,6 +256,7 @@ in top // (if nvidiaVersion != null then
   top.nvidiaPackages {
     version = nvidiaVersion;
     sha256 = nvidiaHash;
+    known_url = known_url;
   }
 else
   { })
