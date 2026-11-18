@@ -12,7 +12,7 @@
   # Enable 32 bits driver
   # This is on by default, you can switch it to off if you want to reduce a
   # bit the size of nixGL closure.
-  enable32bits ? true,
+  enable32bits ? pkgs.stdenv.hostPlatform.isx86,
   # Make sure to enable config.allowUnfree to the instance of nixpkgs to be
   # able to access the nvidia drivers.
   pkgs ? import <nixpkgs> {
@@ -31,4 +31,8 @@ pkgs.callPackage ./nixGL.nix ({
   } // (if enableIntelX86Extensions then {}
   else {
     intel-media-driver = null;
-  }))
+  }) // (pkgs.lib.optionalAttrs (!enable32bits) {
+    pkgsi686Linux = null;
+    driversi686Linux = null;
+  })
+)
