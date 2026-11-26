@@ -28,7 +28,7 @@
         };
 
         # deprecated attributes for retro compatibility
-        defaultPackage = packages;
+        defaultPackage = packages.default;
       })) // rec {
         # deprecated attributes for retro compatibility
         overlay = overlays.default;
